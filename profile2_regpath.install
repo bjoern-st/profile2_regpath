@@ -35,5 +35,7 @@ function profile2_regpath_schema() {
       'type' => array('path'),
     ),
   );
+  
+  return $schema;
 
 }
