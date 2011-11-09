@@ -15,7 +15,7 @@ INSTRUCTIONS
 * Check 'Enable unique registration path'
 * Enter a URL path to use for this profile type
 * Save
-* Logout and visit user/reguster/[your-url]
+* Logout and visit user/register/[your-url]
 
 
 CREDITS
