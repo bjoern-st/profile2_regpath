@@ -1,0 +1,140 @@
+<?php
+
+/**
+ * @file
+ * Attach profile2 form to registration form according to path
+ */
+
+/**
+ * Implements hook_permission()
+ */
+function profile2_regpath_permission() {
+  return array(
+    'administer profile2_regpath' => array(
+      'title' => t('Administer Profile2 registration paths'), 
+      'description' => t('Enable and configure unique registration paths per Profile2 profile type.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for the registration form.
+ */
+function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state) {
+  if (user_access('profile2_regpath')) {
+    // Grab existing values.
+    global $base_url;
+    $profile_type = $form['type']['#default_value'];
+    $profile_id = profile2_regpath_get_profile_id($profile_type);
+    $settings = db_query("SELECT * FROM {profile2_regpath} WHERE profile_id = :profile_id", array(':profile_id' => $profile_id))->fetch();
+
+    // Change description of Profile2's registration checkbox to create clear distinction.
+    $form['data']['registration']['#title'] = t('Show on all user account registration forms.');
+    $form['data']['registration']['#description'] = t('If selected, fields for this profile type will be added to the core user registration page and the administrative add user page.');
+
+    // Create new form fields.
+    $form['regpath'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Unique Registration Path'),
+    );
+    $form['regpath']['status'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable unique registration path'),
+      '#default_value' => is_object($settings) && $settings->status ? $settings->status : 0,
+      '#description' => t("If checked, a unique registration page utilizing this profile type's fields will be available at the specified URL."),
+    );
+    $form['regpath']['path'] = array(
+      '#type' => 'textfield',
+      '#title' => t('URL Path'),
+      '#field_prefix' => $base_url . '/user/register/',
+      '#default_value' => is_object($settings) && $settings->path ? $settings->path : '',
+      '#description' => t('Please enter the portion of the URL that will follow the default registration path. Do not include leading or trailing slashes.'),
+    );
+
+    // Add new validate and submit handlers.
+    $form['#validate'][] = 'profile2_regpath_validate_settings';
+    $form['#submit'][] = 'profile2_regpath_save_settings';
+  }
+}
+
+/**
+ * Helper function to validate profile settings.
+ */
+function profile2_regpath_validate_settings($form, &$form_state) {
+  // Check to see if this path is already being used by a profile.
+  $result = db_query("SELECT profile_id FROM {profile2_regpath} WHERE path = :path", array(':path' => $form_state['values']['path']))->fetch();
+  if (is_object($result) && $result->profile_id) {
+    $profile_type = db_query("SELECT type FROM {profile_type} WHERE id = :id", array(':id' => $result->profile_id))->fetchField();
+    // If path is in use by another profile, throw error.
+    if ($profile_type != $form['type']['#default_value']) {
+      form_set_error('path', 'Error, that path is already being used by another profile type.');
+    }
+  }
+}
+
+/**
+ * Helper function to save profile settings.
+ */
+function profile2_regpath_save_settings($form, &$form_state) {
+  $profile_type = $form_state['values']['type'];
+  $profile_id = profile2_regpath_get_profile_id($profile_type);
+
+  // Add settings to database.
+  db_merge('profile2_regpath')
+    ->key(array('profile_id' => $profile_id))
+    ->fields(array(
+        'path' => $form_state['values']['path'],
+        'status' => $form_state['values']['status'],
+    ))
+    ->execute();
+}
+
+/**
+ * Implements hook_profile2_type_delete().
+ */
+function profile2_regpath_profile2_type_delete($type) {
+  // Delete table entries for deleted profile2 profile type.
+  db_delete('profile2_regpath')
+    ->condition('profile_id', $type->id)
+    ->execute();
+}
+
+/**
+ * Helper function to provide profile_id by profile machine_name.
+ */
+function profile2_regpath_get_profile_id($profile_type) {
+  $profile_id = db_query("SELECT id FROM {profile_type} WHERE type = :profile_type", array(':profile_type' => $profile_type))->fetchField();
+  return $profile_id;
+}
+
+/**
+ * Intercept requests to build user/register form.
+ */
+function profile2_regpath_form_user_register_form_alter(&$form, &$form_state) {
+  // Get profile2 profile type from current path.
+  $type_name = (string) get_profile_type_by_path();
+
+  if ($type_name != NULL) {
+    // Get profile object.
+    $get_profile = profile2_get_types($type_name);
+
+    // Add profile object to $form_state.
+    if (empty($form_state['profiles'][$type_name])) {
+      $form_state['profiles'][$type_name] = profile_create(array('type' => $type_name));
+    }
+
+    // Trigger Profile2 to attach fields from profile defined in $form_state.
+    profile2_attach_form($form, $form_state);
+  }
+}
+
+/**
+ * Helper function to get profile2 profile type from current path.
+ */
+function get_profile_type_by_path() {
+  $profile_type = NULL;
+  $path = arg(2);
+  $profile_type = db_query("SELECT pt.type FROM {profile_type} pt LEFT JOIN {profile2_regpath} pr ON pt.id = pr.profile_id WHERE pr.path = :path AND pr.status = 1", array(':path' => $path))->fetchField();
+
+  return $profile_type;
+}

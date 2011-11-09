@@ -1,0 +1,39 @@
+<?php
+
+/**
+ * @file
+ * Install file for the profile2_regpath module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function profile2_regpath_schema() {
+  $schema['profile2_regpath'] = array(
+    'description' => 'Stores registration path information for profile2 profiles.',
+    'fields' => array(
+      'profile_id' => array(
+        'description' => 'Profile2 profile ID',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'path' => array(
+        'description' => 'Profile-specific registration form path',
+        'type' => 'varchar',
+        'length' => '15',
+        'not null' => FALSE,
+      ),
+      'status' => array(
+        'description' => 'Enabled or disabled',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('profile_id'),
+    'indexes' => array(
+      'type' => array('path'),
+    ),
+  );
+
+}
