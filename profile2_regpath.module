@@ -49,7 +49,29 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state) {
       '#field_prefix' => $base_url . '/user/register/',
       '#default_value' => is_object($settings) && $settings->path ? $settings->path : '',
       '#description' => t('Please enter the portion of the URL that will follow the default registration path. Do not include leading or trailing slashes.'),
+      '#states' => array(
+        'invisible' => array(
+          'input[name="status"]' => array('checked' =>FALSE),
+        ),
+      ),
     );
+
+    if (module_exists('autoassignrole') && $roles = user_roles(TRUE)) {
+      unset($roles[DRUPAL_AUTHENTICATED_RID]);
+      
+      $form['regpath']['roles'] = array(
+        '#type' => 'checkboxes',
+        '#title' => t('Auto Assign Roles during registration'),
+        '#description' => t('Please select any roles that you would like to automatically assign to users registering via this registration path.'),
+        '#options' => $roles,
+        '#default_value' => is_object($settings) && $settings->roles ? unserialize($settings->roles) : array(),
+        '#states' => array(
+          'invisible' => array(
+            'input[name="status"]' => array('checked' =>FALSE),
+          ),
+        ),
+      );
+    }
 
     // Add new validate and submit handlers.
     $form['#validate'][] = 'profile2_regpath_validate_settings';
@@ -85,6 +107,7 @@ function profile2_regpath_save_settings($form, &$form_state) {
     ->fields(array(
         'path' => $form_state['values']['path'],
         'status' => $form_state['values']['status'],
+        'roles' => serialize($form_state['values']['roles']),
     ))
     ->execute();
 }
@@ -127,6 +150,32 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state) {
     profile2_attach_form($form, $form_state);
   }
 }
+
+/**
+ * Implementation of hook_autoassignrole_add_reg_role().
+ */
+function profile2_regpath_autoassignrole_add_role() {
+  // Get profile2 profile type from current path.
+  $profile_type = (string) get_profile_type_by_path();
+  
+  if ($profile_type != NULL) {    
+    // Grab specified roles for this profile type.
+    $roles = db_query("SELECT pr.roles FROM {profile2_regpath} pr LEFT JOIN {profile_type} pt ON pr.profile_id = pt.id WHERE pt.type = :type_name", array(':type_name'=> $profile_type))->fetchField();
+    if ($roles) {
+      $roles = unserialize($roles);
+
+      foreach ($roles as $rid => $value) {
+        // Remove unchecked roles from the array.
+        if ($value == 0) {
+          unset($roles[$rid]);
+        }
+      }
+      // Return array of checked roles.
+      return $roles;
+    }
+  }
+}
+
 
 /**
  * Helper function to get profile2 profile type from current path.

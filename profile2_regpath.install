@@ -10,7 +10,7 @@
  */
 function profile2_regpath_schema() {
   $schema['profile2_regpath'] = array(
-    'description' => 'Stores registration path information for profile2 profiles.',
+    'description' => 'Stores registration path information for profile2 profiles',
     'fields' => array(
       'profile_id' => array(
         'description' => 'Profile2 profile ID',
@@ -21,6 +21,12 @@ function profile2_regpath_schema() {
         'description' => 'Profile-specific registration form path',
         'type' => 'varchar',
         'length' => '15',
+        'not null' => FALSE,
+      ),
+      'roles' => array(
+        'description' => 'Array of role ids',
+        'type' => 'text',
+        'size' => 'big',
         'not null' => FALSE,
       ),
       'status' => array(
@@ -35,7 +41,6 @@ function profile2_regpath_schema() {
       'type' => array('path'),
     ),
   );
-  
-  return $schema;
 
+  return $schema;
 }
