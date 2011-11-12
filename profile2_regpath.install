@@ -20,7 +20,7 @@ function profile2_regpath_schema() {
       'path' => array(
         'description' => 'Profile-specific registration form path',
         'type' => 'varchar',
-        'length' => '15',
+        'length' => '2048',
         'not null' => FALSE,
       ),
       'roles' => array(
@@ -38,9 +38,32 @@ function profile2_regpath_schema() {
     ),
     'primary key' => array('profile_id'),
     'indexes' => array(
-      'type' => array('path'),
+      'type' => array(array('path', 255)),
     ),
   );
 
   return $schema;
+}
+
+/**
+ * Implements hook_update_n().
+ */
+function profile2_regpath_schema_7100() {
+  // Add roles column.
+  $roles_spec = array(
+    'description' => 'Array of role ids',
+    'type' => 'text',
+    'size' => 'big',
+    'not null' => FALSE,
+  );
+  db_add_field('profile2_regpath', 'roles', $roles_spec);
+  
+  // Change length of path column.
+  $path_spec = array(
+    'description' => 'Profile-specific registration form path',
+    'type' => 'varchar',
+    'length' => '2048',
+    'not null' => FALSE,
+  );
+  db_change_field('profile2_regpath', 'path', 'path', $path_spec);
 }
