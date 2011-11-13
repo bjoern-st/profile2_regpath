@@ -48,7 +48,7 @@ function profile2_regpath_schema() {
 /**
  * Implements hook_update_n().
  */
-function profile2_regpath_schema_7100() {
+function profile2_regpath_update_7100() {
   // Add roles column.
   $roles_spec = array(
     'description' => 'Array of role ids',
