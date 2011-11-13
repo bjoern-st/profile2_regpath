@@ -56,9 +56,10 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state) {
       ),
     );
 
+    // Add form fields for Auto Role Assign integration.
     if (module_exists('autoassignrole') && $roles = user_roles(TRUE)) {
       unset($roles[DRUPAL_AUTHENTICATED_RID]);
-      
+
       $form['regpath']['roles'] = array(
         '#type' => 'checkboxes',
         '#title' => t('Auto Assign Roles during registration'),
@@ -71,6 +72,22 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state) {
           ),
         ),
       );
+
+      // Display notice if Autoassignrole is not enabled.
+      if (!variable_get('autoassignrole_auto_active', 0)) {
+        $form['regpath']['autoassignrole_notice'] = array(
+          '#type' => 'item',
+          '#title' => t('Autoassignrole is not enabled.'),
+          '#markup' => 'You must '. l('enable the Auto Assign Role module', 'admin/config/people/autoassignrole/auto') . ' if you would like the selected roles to be assigned during registration.',
+          '#states' => array(
+            'invisible' => array(
+              'input[name="status"]' => array('checked' =>FALSE),
+              'input[name="roles"]' => array('checked' =>FALSE),
+            ),
+          ),
+        );
+      }
+
     }
 
     // Add new validate and submit handlers.
