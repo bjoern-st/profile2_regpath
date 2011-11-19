@@ -112,12 +112,12 @@ function profile2_regpath_validate_settings($form, &$form_state) {
       }
     }
 
-    // Validate URL tail via regex. This also tests that path is not null.
-    if (profile2_regpath_url_validator(trim($form_state['values']['path'])) == FALSE) {
-      form_set_error('path', 'Error, you did not enter a valid URL.');
-    }
+  // Validate URL tail via regex. This also tests that path is not null.
+  if (profile2_regpath_url_validator(trim($form_state['values']['path'])) == FALSE) {
+    form_set_error('path', 'Error, you did not enter a valid URL.');
   }
 }
+
 
 /**
  * Helper function to recognize valid URL patterns.
