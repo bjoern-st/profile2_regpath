@@ -49,7 +49,7 @@ function profile2_regpath_schema() {
  * Implements hook_enable().
  */
 function profile2_regpath_enable() {
-  drupal_set_message('Profile2 Registration Path has been enabled. To configure profile registration paths, edit a profile type on the ' . l('Profile Types administration page', 'admin/structure/profiles') . '.','status');
+  drupal_set_message(st('Profile2 Registration Path has been enabled. To configure profile registration paths, edit a profile type on the ' . l('Profile Types administration page', 'admin/structure/profiles.')), 'status');
 }
 
 /**
@@ -64,7 +64,7 @@ function profile2_regpath_update_7100() {
     'not null' => FALSE,
   );
   db_add_field('profile2_regpath', 'roles', $roles_spec);
-  
+
   // Change length of path column.
   $path_spec = array(
     'description' => 'Profile-specific registration form path',
