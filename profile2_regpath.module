@@ -21,7 +21,7 @@ function profile2_regpath_permission() {
  * Implements hook_form_FORM_ID_alter() for the registration form.
  */
 function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state) {
-  if (user_access('profile2_regpath')) {
+  if (user_access('administer profile2_regpath')) {
     // Grab existing values.
     global $base_url;
     $profile_type = $form['type']['#default_value'];
@@ -54,6 +54,7 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state) {
           'input[name="status"]' => array('checked' => FALSE),
         ),
       ),
+      '#multiple' => TRUE,
     );
 
     // Add form fields for Auto Role Assign integration.
