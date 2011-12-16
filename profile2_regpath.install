@@ -35,6 +35,12 @@ function profile2_regpath_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'weight' => array(
+        'description' => 'Weight of Profile Type',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('profile_id'),
     'indexes' => array(
@@ -73,4 +79,18 @@ function profile2_regpath_update_7100() {
     'not null' => FALSE,
   );
   db_change_field('profile2_regpath', 'path', 'path', $path_spec);
+}
+
+/**
+ * Implements hook_update_n().
+ */
+function profile2_regpath_update_7110() {
+  // Add weight column.
+  $weight_specs = array(
+    'description' => 'Weight of Profile Type',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  db_add_field('profile2_regpath', 'weight', $weight_specs);
 }

@@ -34,7 +34,7 @@ function profile2_regpath_system_settings() {
   $form = array();
   
   $form['profile-types'] = profile2_regpath_table();
-  //drupal_add_tabledrag('profile-types-table', 'order', 'sibling', 'my-elements-weight');
+  drupal_add_tabledrag('profile-types-table', 'order', 'sibling', 'profile-weight');
   
   return system_settings_form($form);
 }
@@ -44,34 +44,49 @@ function profile2_regpath_system_settings() {
  *   A render array set for theming by theme_table().
  */
 function profile2_regpath_table() {
+  // Define table headers.
   $header = array(
-    //array('data' => t('Profile Type'), 'field' => 'pt.label'),
-    array('data' => t('ID'), 'field' => 'pr.profile_id', 'sort' => 'ASC'),
+    array('data' => t('Weight'), 'field' => 'pr.weight', 'sort' => 'ASC'),
+    array('data' => t('ID'), 'field' => 'pt.id', 'sort' => 'ASC'),
+    array('data' => t('Profile Type'), 'field' => 'pt.label'),
     array('data' => t('Path'), 'field' => 'pr.path', 'sort' => 'ASC'),
   );
 
-  $query = db_select('profile2_regpath', 'pr')
-    //->join('profile_type', 'pt', 'pr.profile_id = pt.id')
-    ->extend('TableSort')
-    ->fields('pr', array('profile_id', 'path'))
-    //->fields('pt', array('id', 'label'))
-    ->orderByHeader($header);
-
+  $query = db_select('profile2_regpath', 'pr');
+  $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
+  $query->extend('TableSort');
+  
+  // Must define fields in the same order that headers are defined.
+  $query->fields('pr', array('weight'));
+  $query->fields('pt', array('id', 'label'));
+  $query->fields('pr', array('path'));
+  
+  //$query->orderByHeader($header);
   $result = $query->execute();
 
   $rows = array();
   foreach ($result as $row) {
+    /*
+    $weight = $row->weight;
+    $row->$weight = array(
+        '#value' => $weight,
+        '#attributes' => array('class' => array('profile-weight')),
+    );
+    */
+    
     $rows[] = array(
       'data' => (array) $row, 
+      'class' => array('draggable'), // All draggable rows must have class 'draggable'.
     );
   }
 
   // build the table for the nice output.
+
   $table = array(
     '#theme' => 'table',
     '#header' => $header,
     '#rows' => $rows,
-    '#attributes' => array('id' => 'profile-types-table'),
+    '#attributes' => array('id' => 'profile-types-table'), // All draggable tables must have a set css id.
   );
 
   return $table;
