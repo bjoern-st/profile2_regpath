@@ -6,99 +6,6 @@
  */
 
 /**
- * Implements hook_menu().
- */
-function profile2_regpath_menu() {
-
-  // Define settings block on administrative configuration page.
-  $items['admin/config/profile2_regpath'] = array(
-    'title' => 'Profile2',
-    'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('administer profile2_regpath'),
-    'file' => 'system.admin.inc',
-    'file path' => drupal_get_path('module', 'system'),
-  );
-
-  $items['admin/config/profile2_regpath/manage'] = array(
-    'title' => 'Profile2 Registration Paths',
-    'description' => "This page contains configuration options for the Profile2 Registration Path module. Please remember that per-profile-type settings are configured on each profile type's edit page.",
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('profile2_regpath_system_settings'),
-    'access arguments' => array('administer profile2_regpath'),
-  );
-  
-  return $items;
-}
-
-function profile2_regpath_system_settings() {
-  $form = array();
-  
-  $form['profile-types'] = profile2_regpath_table();
-  //drupal_add_tabledrag('profile-types-table', 'order', 'sibling', 'my-elements-weight');
-  
-  return system_settings_form($form);
-}
-
-/**
- *   Build a table render array of Profile2 profile types.
- *   A render array set for theming by theme_table().
- */
-function profile2_regpath_table() {
-  $header = array(
-    //array('data' => t('Profile Type'), 'field' => 'pt.label'),
-    array('data' => t('ID'), 'field' => 'pr.profile_id', 'sort' => 'ASC'),
-    array('data' => t('Path'), 'field' => 'pr.path', 'sort' => 'ASC'),
-  );
-
-  $query = db_select('profile2_regpath', 'pr')
-    //->join('profile_type', 'pt', 'pr.profile_id = pt.id')
-    ->extend('TableSort')
-    ->fields('pr', array('profile_id', 'path'))
-    //->fields('pt', array('id', 'label'))
-    ->orderByHeader($header);
-
-  $result = $query->execute();
-
-  $rows = array();
-  foreach ($result as $row) {
-    $rows[] = array(
-      'data' => (array) $row, 
-    );
-  }
-
-  // build the table for the nice output.
-  $table = array(
-    '#theme' => 'table',
-    '#header' => $header,
-    '#rows' => $rows,
-    '#attributes' => array('id' => 'profile-types-table'),
-  );
-
-  return $table;
-
-}
-
-/**
- * Implementation of hook_help().
- */
-function profile2_regpath_help($section) {
-  switch ($section) {
-    case 'admin/config/profile2_regpath':
-      return '<p>'. t("This page contains configuration options for the Profile2 Registration Path module. Please remember that per-profile-type settings are configured on each profile type's edit page") . '</p>';
-  }
-}
-
-/**
- * Implements hook_admin_paths().
- */
-function profile2_regpath_admin_paths() {
-  $paths = array(
-    'admin/config/profile2_regpath' => TRUE,
-  );
-  return $paths;
-}
-
-/**
  * Implements hook_permission().
  */
 function profile2_regpath_permission() {
@@ -128,7 +35,7 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state) {
     // Create new form fields.
     $form['regpath'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Unique Registration Path'),
+      '#title' => t('Unique registration path'),
     );
     $form['regpath']['status'] = array(
       '#type' => 'checkbox',
@@ -138,7 +45,7 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state) {
     );
     $form['regpath']['path'] = array(
       '#type' => 'textfield',
-      '#title' => t('URL Path'),
+      '#title' => t('URL path'),
       '#field_prefix' => $base_url . '/user/register/',
       '#default_value' => is_object($settings) && $settings->path ? $settings->path : '',
       '#description' => t('Please enter the portion of the URL that will follow the default registration path. Do not include leading or trailing slashes.'),
@@ -179,7 +86,7 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state) {
 function profile2_regpath_validate_settings($form, &$form_state) {
 
   if ($form_state['values']['status'] == 1) {
-    
+
     // Check to see if this path is already being used by a profile.
     $result = db_query("SELECT profile_id FROM {profile2_regpath} WHERE path = :path", array(':path' => $form_state['values']['path']))->fetch();
     if (isset($result) && is_object($result) && $result->profile_id) {
@@ -194,14 +101,13 @@ function profile2_regpath_validate_settings($form, &$form_state) {
     if (profile2_regpath_url_validator(trim($form_state['values']['path'])) == FALSE) {
       form_set_error('path', 'Error, you did not enter a valid URL.');
     }
-  
+
   }
 }
 
 
 /**
  * Helper function to recognize valid URL patterns.
- * snippets taken from link.module.
  */
 function profile2_regpath_url_validator($url) {
   $LINK_ICHARS_DOMAIN = (string) html_entity_decode(implode("", array(
