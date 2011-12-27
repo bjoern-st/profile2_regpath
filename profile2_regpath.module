@@ -330,6 +330,7 @@ function profile2_regpath_user_presave(&$edit, $account, $category) {
       if ($roles) {
         // Build necessary arrays.
         $roles = unserialize($roles);
+        $selected_roles = array();
         foreach ($roles as $rid => $value) {
           // Add role to $roles_to_add.
           if ($value != 0) {
@@ -337,17 +338,19 @@ function profile2_regpath_user_presave(&$edit, $account, $category) {
           }
         }
 
-        // This intermediary steps ensure that selected roles actually match those in {roles}.
-        $roles_to_add = array_intersect_key($user_roles, array_filter($selected_roles));
+        if (sizeof($selected_roles) > 0) {
+          // This intermediary steps ensure that selected roles actually match those in {roles}.
+          $roles_to_add = array_intersect_key($user_roles, array_filter($selected_roles));
 
-        // Add in the new roles.
-        if ($roles_to_add != NULL && sizeof((array)$roles_to_add) > 0) {
-          // Make sure the roles key exists.
-          if (!isset($edit['roles'])) {
-            $edit['roles'] = array();
+          // Add in the new roles.
+          if ($roles_to_add != NULL && sizeof((array)$roles_to_add) > 0) {
+            // Make sure the roles key exists.
+            if (!isset($edit['roles'])) {
+              $edit['roles'] = array();
+            }
+
+            $edit['roles'] = $roles_to_add + $edit['roles'];
           }
-
-          $edit['roles'] = $roles_to_add + $edit['roles'];
         }
       }
     }
