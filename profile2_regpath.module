@@ -300,21 +300,23 @@ function profile2_regpath_get_profile_id($profile_type) {
 /**
  * Intercept requests to build user/register form.
  */
-function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $form_id) {
-  // Get profile2 profile type from current path.
-  $type_name = (string) get_profile_type_by_path();
+function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'user_register_form') {
+    // Get profile2 profile type from current path.
+    $type_name = (string) get_profile_type_by_path();
 
-  if ($type_name != NULL) {
-    // Get profile object.
-    $get_profile = profile2_get_types($type_name);
+    if ($type_name != NULL) {
+      // Get profile object.
+      $get_profile = profile2_get_types($type_name);
 
-    // Add profile object to $form_state.
-    if (empty($form_state['profiles'][$type_name])) {
-      $form_state['profiles'][$type_name] = profile_create(array('type' => $type_name));
+      // Add profile object to $form_state.
+      if (empty($form_state['profiles'][$type_name])) {
+        $form_state['profiles'][$type_name] = profile_create(array('type' => $type_name));
+      }
+
+      // Trigger Profile2 to attach fields from profile defined in $form_state.
+      profile2_attach_form($form, $form_state);
     }
-
-    // Trigger Profile2 to attach fields from profile defined in $form_state.
-    profile2_attach_form($form, $form_state);
   }
 }
 
