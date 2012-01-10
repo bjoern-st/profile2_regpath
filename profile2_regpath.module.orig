@@ -6,6 +6,8 @@
  */
 
 /**
+<<<<<<< HEAD
+=======
  * Implements hook_menu().
  */
 function profile2_regpath_menu() {
@@ -114,6 +116,7 @@ function profile2_regpath_admin_paths() {
 }
 
 /**
+>>>>>>> 5c5a5efc14a9a4cc3d3a32b4ca7fbefea8ebe43e
  * Implements hook_permission().
  */
 function profile2_regpath_permission() {
