@@ -27,6 +27,28 @@ function profile2_regpath_menu() {
     'access arguments' => array('administer profile2_regpath'),
   );
   
+  // Get data object of all registration paths.
+  $query = db_select('profile2_regpath', 'pr');
+  $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
+  $query->fields('pr', array('weight', 'path'));
+  $query->fields('pt', array('id', 'label'));
+  $result = $query->execute();
+  $reg_paths = $result->fetchAll();
+
+  // Set menu items for each registration path.
+  foreach($reg_paths as $key => $value) {
+    $items['user/register/' . $value->path] = array(
+      'title' => check_plain($value->label),
+      'page_callback' => 'drupal_get_form',
+      'page_arguments' => array('user_register'),
+      //'page_callback' => 'profile2_regpath_user_register',
+      //'page arguments' => array($value->id),
+      //'file' => 'registration_form.inc',
+      'weight' => $value->weight,
+      'access callback' => TRUE,
+    );
+  }
+  
   return $items;
 }
 
@@ -300,6 +322,7 @@ function profile2_regpath_get_profile_id($profile_type) {
  * Intercept requests to build user/register form.
  */
 function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
+  
   if ($form_id == 'user_register_form') {
     // Get profile2 profile type from current path.
     $type_name = (string) get_profile_type_by_path();
@@ -315,6 +338,7 @@ function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
 
       // Trigger Profile2 to attach fields from profile defined in $form_state.
       profile2_attach_form($form, $form_state);
+      dsm($form_state);
     }
   }
 }
