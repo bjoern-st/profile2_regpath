@@ -214,25 +214,11 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
  * Helper function to validate profile settings.
  */
 function profile2_regpath_validate_settings($form, &$form_state) {
-
   if ($form_state['values']['status'] == 1) {
-    /*
-    // Check to see if this path is already being used by a profile.
-    $result = db_query("SELECT profile_id FROM {profile2_regpath} WHERE path = :path", array(':path' => $form_state['values']['path']))->fetch();
-    if (isset($result) && is_object($result) && $result->profile_id) {
-      $profile_type = db_query("SELECT type FROM {profile_type} WHERE id = :id", array(':id' => $result->profile_id))->fetchField();
-      // If path is in use by another profile, throw error.
-      if ($profile_type != $form['type']['#default_value']) {
-        form_set_error('path', 'Error, that path is already being used by another profile type.');
-      }
-    }
-    */
-
     // Validate URL tail via regex. This also tests that path is not null.
     if (profile2_regpath_url_validator(trim($form_state['values']['path'])) == FALSE) {
       form_set_error('path', 'Error, you did not enter a valid URL.');
     }
-
   }
 }
 
