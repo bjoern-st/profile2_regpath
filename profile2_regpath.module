@@ -24,7 +24,7 @@ function profile2_regpath_menu() {
       'title' => 'Create new account',
       'page callback' => '_profile2_regpath_user_register',
       'page arguments' => array($value->id),
-      'access callback' => TRUE,
+      'access callback' => 'user_is_anonymous',
       'file' => 'registration_form.inc',
       'menu_name' => 'user-menu',
       'type' => MENU_CALLBACK,
