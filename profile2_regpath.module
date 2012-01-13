@@ -9,23 +9,6 @@
  * Implements hook_menu().
  */
 function profile2_regpath_menu() {
-
-  // Define settings block on administrative configuration page.
-  $items['admin/config/profile2_regpath'] = array(
-    'title' => 'Profile2',
-    'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('administer profile2_regpath'),
-    'file' => 'system.admin.inc',
-    'file path' => drupal_get_path('module', 'system'),
-  );
-
-  $items['admin/config/profile2_regpath/manage'] = array(
-    'title' => 'Profile2 Registration Paths',
-    'description' => "This page contains configuration options for the Profile2 Registration Path module. Please remember that per-profile-type settings are configured on each profile type's edit page.",
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('profile2_regpath_system_settings'),
-    'access arguments' => array('administer profile2_regpath'),
-  );
   
   // Get data object of all registration paths.
   $query = db_select('profile2_regpath', 'pr');
@@ -73,89 +56,6 @@ function profile2_regpath_menu() {
   return $items;
 }
 
-function profile2_regpath_system_settings() {
-  $form = array();
-  
-  $form['profile-types'] = profile2_regpath_table();
-  drupal_add_tabledrag('profile-types-table', 'order', 'sibling', 'profile-weight');
-  
-  return system_settings_form($form);
-}
-
-/**
- *   Build a table render array of Profile2 profile types.
- *   A render array set for theming by theme_table().
- */
-function profile2_regpath_table() {
-  // Define table headers.
-  $header = array(
-    array('data' => t('Weight'), 'field' => 'pr.weight', 'sort' => 'ASC'),
-    array('data' => t('ID'), 'field' => 'pt.id', 'sort' => 'ASC'),
-    array('data' => t('Profile Type'), 'field' => 'pt.label'),
-    array('data' => t('Path'), 'field' => 'pr.path', 'sort' => 'ASC'),
-  );
-
-  $query = db_select('profile2_regpath', 'pr');
-  $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
-  $query->extend('TableSort');
-  
-  // Must define fields in the same order that headers are defined.
-  $query->fields('pr', array('weight'));
-  $query->fields('pt', array('id', 'label'));
-  $query->fields('pr', array('path'));
-  
-  //$query->orderByHeader($header);
-  $result = $query->execute();
-
-  $rows = array();
-  foreach ($result as $row) {
-    /*
-    $weight = $row->weight;
-    $row->$weight = array(
-        '#value' => $weight,
-        '#attributes' => array('class' => array('profile-weight')),
-    );
-    */
-    
-    $rows[] = array(
-      'data' => (array) $row, 
-      'class' => array('draggable'), // All draggable rows must have class 'draggable'.
-    );
-  }
-
-  // build the table for the nice output.
-
-  $table = array(
-    '#theme' => 'table',
-    '#header' => $header,
-    '#rows' => $rows,
-    '#attributes' => array('id' => 'profile-types-table'), // All draggable tables must have a set css id.
-  );
-
-  return $table;
-
-}
-
-/**
- * Implementation of hook_help().
- */
-function profile2_regpath_help($section) {
-  switch ($section) {
-    case 'admin/config/profile2_regpath':
-      return '<p>'. t("This page contains configuration options for the Profile2 Registration Path module. Please remember that per-profile-type settings are configured on each profile type's edit page") . '</p>';
-  }
-}
-
-/**
- * Implements hook_admin_paths().
- */
-function profile2_regpath_admin_paths() {
-  $paths = array(
-    'admin/config/profile2_regpath' => TRUE,
-  );
-  return $paths;
-}
-
 /**
  * Implements hook_permission().
  */
@@ -166,49 +66,6 @@ function profile2_regpath_permission() {
       'description' => t('Enable and configure unique registration paths per Profile2 profile type.'),
     ),
   );
-}
-
-/**
- * Implements hook_block_info().
- */
-function profile2_regpath_block_info() {
-
-  // Create a user registration block for each profile2 profile type.
-  if ($profile2_entity = entity_get_info('profile2')) {
-    foreach ($profile2_entity['bundles'] as $bundle => $values) {
-      $blocks['prp_' . $bundle . '_user_register'] = array(
-        'info' => t('PRP User Registration Block - ' . $values['label']),
-      );
-    }
-  }
-
-  return $blocks;
-}
-
-/**
- * Implements hook_block_view().
- */
-function profile2_regpath_block_view($delta = '') {
-  global $user;
-
-  //The $delta parameter tells us which block is being requested.
-  switch ($delta) {
-
-    // Generate content for each profile2 profile type's pcp block.
-    default:
-
-      if ($profile2_entity = entity_get_info('profile2')) {
-        foreach ($profile2_entity['bundles'] as $bundle => $values) {
-          if ($delta == 'prp_' . $bundle . '_user_register') {
-            $block['subject'] = t('Register as ' . $values['label']);
-            $block['content'] = 'test';
-          }
-        }
-      }
-      break;
-  }
-
-  return $block;
 }
 
 /**
