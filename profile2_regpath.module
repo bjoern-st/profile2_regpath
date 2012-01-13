@@ -9,45 +9,47 @@
  * Implements hook_menu().
  */
 function profile2_regpath_menu() {
-  $reg_paths = profile2_regpath_get_paths();
+  $items = array();
   
-  // Set menu items for each registration path.
-  foreach($reg_paths as $key => $value) {
-    // We will use hook_menu_alter() to deal with the 'user' path.
-    if ($value->path != 'user') {
-      $items[$value->path] = array(
-        'title' => 'Create new account',
-        'page callback' => '_profile2_regpath_user_login',
-        'access callback' => 'user_is_anonymous',
-        'file' => 'registration_form.inc',
-        'menu_name' => 'user-menu',
-        'type' => MENU_CALLBACK,
-      ); 
-      $items[$value->path . '/login'] = array(
-        'title' => 'Log in',      
-        'page callback' => '_profile2_regpath_user_login',
-        'access callback' => 'user_is_anonymous',
-        'file' => 'registration_form.inc',
-        'type' => MENU_DEFAULT_LOCAL_TASK,
-      );
-      $items[$value->path . '/register'] = array(
-        'title' => 'Create new account',
-        'page callback' => '_profile2_regpath_user_register',
-        'page arguments' => array($value->id),
-        'access callback' => 'user_is_anonymous',
-        'file' => 'registration_form.inc',
-        'type' => MENU_LOCAL_TASK,
-      );
-      $items[$value->path . '/password'] = array(
-        'title' => 'Request new password',
-        'type' => MENU_LOCAL_TASK,
-        'page callback' => '_profile2_regpath_user_password',
-        'access callback' => 'user_is_anonymous',
-        'file' => 'registration_form.inc',
-      );
+  $reg_paths = profile2_regpath_get_paths();
+  if ($reg_paths) {
+    // Set menu items for each registration path.
+    foreach($reg_paths as $key => $value) {
+      // We will use hook_menu_alter() to deal with the 'user' path.
+      if ($value->path != 'user') {
+        $items[$value->path] = array(
+          'title' => 'Create new account',
+          'page callback' => '_profile2_regpath_user_login',
+          'access callback' => 'user_is_anonymous',
+          'file' => 'registration_form.inc',
+          'menu_name' => 'user-menu',
+          'type' => MENU_CALLBACK,
+        ); 
+        $items[$value->path . '/login'] = array(
+          'title' => 'Log in',      
+          'page callback' => '_profile2_regpath_user_login',
+          'access callback' => 'user_is_anonymous',
+          'file' => 'registration_form.inc',
+          'type' => MENU_DEFAULT_LOCAL_TASK,
+        );
+        $items[$value->path . '/register'] = array(
+          'title' => 'Create new account',
+          'page callback' => '_profile2_regpath_user_register',
+          'page arguments' => array($value->id),
+          'access callback' => 'user_is_anonymous',
+          'file' => 'registration_form.inc',
+          'type' => MENU_LOCAL_TASK,
+        );
+        $items[$value->path . '/password'] = array(
+          'title' => 'Request new password',
+          'type' => MENU_LOCAL_TASK,
+          'page callback' => '_profile2_regpath_user_password',
+          'access callback' => 'user_is_anonymous',
+          'file' => 'registration_form.inc',
+        );
+      }
     }
   }
-  
   return $items;
 }
 
@@ -237,6 +239,14 @@ function profile2_regpath_save_settings($form, &$form_state) {
     ->key(array('profile_id' => $profile_id))
     ->fields($fields)
     ->execute();
+
+  // Rebuild the menu if a registration path has been changed.
+  if ($form['regpath']['path']['#default_value'] != $form_state['values']['path']){
+    if (menu_rebuild()) {
+      $path = $form_state['values']['path'] . '/register';
+      drupal_set_message(t('The menu table has been rebuilt to include the new registration path "@path".', array('@path' => $path)));
+    }
+  }
 }
 
 /**
