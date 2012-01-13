@@ -1,12 +1,7 @@
 <?php
-// $Id: autoassignrole-path.inc,v 1.1.2.3 2009/09/21 19:21:18 cyberswat Exp $
-
 /**
  * @file
- *
- * The autoassignrole-admin.inc file
- *
- * Contains path specific functionality
+ * Builds profile-specific register, login, and password forms.
  */
 
 

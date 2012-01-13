@@ -10,7 +10,24 @@
  */
 function profile2_regpath_menu() {
   $items = array();
-  
+  /*
+  // Define settings block on administrative configuration page.
+  $items['admin/config/profile2_regpath'] = array(
+    'title' => 'Profile2',
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer profile2_regpath'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
+
+  $items['admin/config/profile2_regpath/manage'] = array(
+    'title' => 'Profile2 Registration Paths',
+    'description' => "This page contains configuration options for the Profile2 Registration Path module. Please remember that per-profile-type settings are configured on each profile type's edit page.",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('profile2_regpath_system_settings'),
+    'access arguments' => array('administer profile2_regpath'),
+  );
+  */
   $reg_paths = profile2_regpath_get_paths();
   if ($reg_paths) {
     // Set menu items for each registration path.
@@ -73,6 +90,49 @@ function profile2_regpath_menu_alter(&$items) {
     return $items;
   }
 }
+
+/**
+ * Creates admin form.
+ */
+/*
+function profile2_regpath_system_settings() {
+  $form = array();
+
+  $reg_paths = profile2_regpath_get_paths();
+  if ($reg_paths) {
+    // @todo need to create draggable table for all profile types.
+  }
+  else {
+    drupal_set_message('You do not have any Profile2 profile types.');
+  }
+
+  return system_settings_form($form);
+}
+*/
+
+/**
+ * Implementation of hook_help().
+ */
+/*
+function profile2_regpath_help($section) {
+  switch ($section) {
+    case 'admin/config/profile2_regpath':
+      return '<p>'. t("This page contains configuration options for the Profile2 Registration Path module. Please remember that per-profile-type settings are configured on each profile type's edit page") . '</p>';
+  }
+}
+*/
+
+/**
+ * Implements hook_admin_paths().
+ */
+/*
+function profile2_regpath_admin_paths() {
+  $paths = array(
+    'admin/config/profile2_regpath' => TRUE,
+  );
+  return $paths;
+}
+*/
 
 /**
  * Implements hook_permission().
@@ -368,7 +428,7 @@ function profile2_regpath_get_paths($path = NULL) {
   $query = db_select('profile2_regpath', 'pr');
   $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
   $query->fields('pr', array('path'));
-  $query->fields('pt', array('id', 'label'));
+  $query->fields('pt', array('id', 'label', 'type'));
   if ($path) { $query->condition('path', $path); }
   $result = $query->execute();
   $reg_paths = $result->fetchAll();
