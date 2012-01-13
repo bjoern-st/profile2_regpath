@@ -13,7 +13,12 @@
 function _profile2_regpath_user_register($pids = array()) {
   module_load_include('pages.inc', 'user', 'user');
   $output = drupal_get_form('user_register_form');
-  dsm($form_state);
+
+  /* I'd really like to do the profile attaching here, rather than in hook_form_alter(), 
+   * but I don't know how I would access $form and $form_state from here.
+   */
+
+  /*
   // Get profile type(s) matching pid(s).
   $query = db_select('profile2_regpath', 'pr');
   $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
@@ -37,6 +42,7 @@ function _profile2_regpath_user_register($pids = array()) {
       profile2_attach_form($form, $form_state);
     }
   }
+  */
 
   return $output;
 }
