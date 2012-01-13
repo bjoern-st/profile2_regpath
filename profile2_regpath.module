@@ -320,11 +320,12 @@ function profile2_regpath_profile2_type_delete($type) {
 
 /**
  * Intercept requests to build user/register form.
+ * Implements hook
  */
-function profile2_regpath_form_user_register_form_alter(&$form, &$form_state) {
+function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $form_id) {
   // Get profile2 profile types from current path.
   $type_names = get_profile_type_by_path();
-
+  dsm($form_id);
   if ($type_names != NULL) {
     // Attach profile(s) to user/register form.
     foreach ($type_names as $key => $value) {
