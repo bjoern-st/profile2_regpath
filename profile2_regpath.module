@@ -9,51 +9,67 @@
  * Implements hook_menu().
  */
 function profile2_regpath_menu() {
-  
-  // Get data object of all registration paths.
-  $query = db_select('profile2_regpath', 'pr');
-  $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
-  $query->fields('pr', array('path'));
-  $query->fields('pt', array('id', 'label'));
-  $result = $query->execute();
-  $reg_paths = $result->fetchAll();
+  $reg_paths = profile2_regpath_get_paths();
   
   // Set menu items for each registration path.
   foreach($reg_paths as $key => $value) {
-    $items[$value->path] = array(
-      'title' => 'Create new account',
-      'page callback' => '_profile2_regpath_user_register',
-      'page arguments' => array($value->id),
-      'access callback' => 'user_is_anonymous',
-      'file' => 'registration_form.inc',
-      'menu_name' => 'user-menu',
-      'type' => MENU_CALLBACK,
-    ); 
-    $items[$value->path . '/login'] = array(
-      'title' => 'Log in',      
-      'page callback' => '_profile2_regpath_user_login',
-      'access callback' => 'user_is_anonymous',
-      'file' => 'registration_form.inc',
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-    );
-    $items[$value->path . '/register'] = array(
-      'title' => 'Create new account',
-      'page callback' => '_profile2_regpath_user_register',
-      'page arguments' => array($value->id),
-      'access callback' => 'user_is_anonymous',
-      'file' => 'registration_form.inc',
-      'type' => MENU_LOCAL_TASK,
-    );
-    $items[$value->path . '/password'] = array(
-      'title' => 'Request new password',
-      'type' => MENU_LOCAL_TASK,
-      'page callback' => '_profile2_regpath_user_password',
-      'access callback' => 'user_is_anonymous',
-      'file' => 'registration_form.inc',
-    );
+    // We will use hook_menu_alter() to deal with the 'user' path.
+    if ($value->path != 'user') {
+      $items[$value->path] = array(
+        'title' => 'Create new account',
+        'page callback' => '_profile2_regpath_user_login',
+        'access callback' => 'user_is_anonymous',
+        'file' => 'registration_form.inc',
+        'menu_name' => 'user-menu',
+        'type' => MENU_CALLBACK,
+      ); 
+      $items[$value->path . '/login'] = array(
+        'title' => 'Log in',      
+        'page callback' => '_profile2_regpath_user_login',
+        'access callback' => 'user_is_anonymous',
+        'file' => 'registration_form.inc',
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+      );
+      $items[$value->path . '/register'] = array(
+        'title' => 'Create new account',
+        'page callback' => '_profile2_regpath_user_register',
+        'page arguments' => array($value->id),
+        'access callback' => 'user_is_anonymous',
+        'file' => 'registration_form.inc',
+        'type' => MENU_LOCAL_TASK,
+      );
+      $items[$value->path . '/password'] = array(
+        'title' => 'Request new password',
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => '_profile2_regpath_user_password',
+        'access callback' => 'user_is_anonymous',
+        'file' => 'registration_form.inc',
+      );
+    }
   }
   
   return $items;
+}
+
+/**
+ * Implements hook_menu_alter().
+ */
+function profile2_regpath_menu_alter(&$items) {
+  // Check to see if the default 'user' path is being used with Profile2.
+  if ($user_paths = profile2_regpath_get_paths('user')) {
+    $pids = array();
+    foreach ($user_paths as $key => $value) {
+      $pids[] = $user_paths[$key]->id;
+    }
+
+    // Build form at user/register using _profile2_regpath_user_register().
+    $items['user/register']['page callback'] = '_profile2_regpath_user_register';
+    $items['user/register']['page arguments'] = $pids;
+    $items['user/register']['file'] = 'registration_form.inc';
+    $items['user/register']['file path'] = drupal_get_path('module', 'profile2_regpath');
+
+    return $items;
+  }
 }
 
 /**
@@ -138,7 +154,7 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
 function profile2_regpath_validate_settings($form, &$form_state) {
 
   if ($form_state['values']['status'] == 1) {
-
+    /*
     // Check to see if this path is already being used by a profile.
     $result = db_query("SELECT profile_id FROM {profile2_regpath} WHERE path = :path", array(':path' => $form_state['values']['path']))->fetch();
     if (isset($result) && is_object($result) && $result->profile_id) {
@@ -148,6 +164,7 @@ function profile2_regpath_validate_settings($form, &$form_state) {
         form_set_error('path', 'Error, that path is already being used by another profile type.');
       }
     }
+    */
 
     // Validate URL tail via regex. This also tests that path is not null.
     if (profile2_regpath_url_validator(trim($form_state['values']['path'])) == FALSE) {
@@ -254,7 +271,7 @@ function profile2_regpath_user_presave(&$edit, $account, $category) {
     // Get profile2 profile type from current path.
     $profile_type = (string) get_profile_type_by_path();
 
-    if ($profile_type != NULL && $profile_type != 'user') {
+    if ($profile_type != NULL) {
       // Grab specified roles for this profile type.
       $roles = db_query("
         SELECT pr.roles FROM {profile2_regpath} pr
@@ -302,6 +319,22 @@ function get_profile_type_by_path() {
   $path = arg(0);
   $profile_type = db_query("SELECT pt.type FROM {profile_type} pt LEFT JOIN {profile2_regpath} pr ON pt.id = pr.profile_id WHERE pr.path = :path AND pr.status = 1", array(':path' => $path))->fetchField();
 
-
   return $profile_type;
+}
+
+/**
+ * Helper function to get all registration paths.
+ * @params optionally pass in path value for WHERE condition.
+ */
+function profile2_regpath_get_paths($path = NULL) {
+  // Get data object of all registration paths.
+  $query = db_select('profile2_regpath', 'pr');
+  $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
+  $query->fields('pr', array('path'));
+  $query->fields('pt', array('id', 'label'));
+  if ($path) { $query->condition('path', $path); }
+  $result = $query->execute();
+  $reg_paths = $result->fetchAll();
+
+  return $reg_paths;
 }
