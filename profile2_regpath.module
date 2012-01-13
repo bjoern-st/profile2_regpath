@@ -148,6 +148,49 @@ function profile2_regpath_permission() {
 }
 
 /**
+ * Implements hook_block_info().
+ */
+function profile2_regpath_block_info() {
+
+  // Create a user registration block for each profile2 profile type.
+  if ($profile2_entity = entity_get_info('profile2')) {
+    foreach ($profile2_entity['bundles'] as $bundle => $values) {
+      $blocks['prp_' . $bundle . '_user_register'] = array(
+        'info' => t('PRP User Registration Block - ' . $values['label']),
+      );
+    }
+  }
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function profile2_regpath_block_view($delta = '') {
+  global $user;
+
+  //The $delta parameter tells us which block is being requested.
+  switch ($delta) {
+
+    // Generate content for each profile2 profile type's pcp block.
+    default:
+
+      if ($profile2_entity = entity_get_info('profile2')) {
+        foreach ($profile2_entity['bundles'] as $bundle => $values) {
+          if ($delta == 'prp_' . $bundle . '_user_register') {
+            $block['subject'] = t('Register as ' . $values['label']);
+            $block['content'] = 'test';
+          }
+        }
+      }
+      break;
+  }
+
+  return $block;
+}
+
+/**
  * Implements hook_form_FORM_ID_alter() for the registration form.
  */
 function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $form_id) {
