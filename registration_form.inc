@@ -12,8 +12,7 @@ function _profile2_regpath_user_register($pids = array()) {
   /* I'd really like to do the profile attaching here, rather than in hook_form_alter(), 
    * but I don't know how I would access $form and $form_state from here.
    */
-
-  /*
+  /* 
   // Get profile type(s) matching pid(s).
   $query = db_select('profile2_regpath', 'pr');
   $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
