@@ -112,6 +112,7 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
       '#default_value' => is_object($settings) && $settings->status ? $settings->status : 0,
       '#description' => t("If checked, a unique registration page utilizing this profile type's fields will be available at the specified URL."),
     );
+    // @todo add unlimited cardinality to the path field.
     $form['regpath']['path'] = array(
       '#type' => 'textfield',
       '#title' => t('URL path'),
@@ -176,6 +177,12 @@ function profile2_regpath_validate_settings($form, &$form_state) {
       form_set_error('path', 'Error, you did not enter a valid URL.');
     }
     // @todo Check to see if another module is using the selected path(s).
+    /*
+    if (drupal_lookup_path('alias', $form_state['values']['path']) || drupal_lookup_path('system', $form_state['values']['path'])) {
+      // Must make exceptions for '/user' and other p2rp registered paths.
+      form_set_error('path', 'Error, that base path is already in use.');
+    }
+    */
   }
 }
 
