@@ -87,7 +87,7 @@ function profile2_regpath_update_7100() {
 function profile2_regpath_update_7110() {
   // Add weight column.
   $weight_specs = array(
-    'description' => 'Weight of Profile Type',
+    'description' => 'Weight of profile type',
     'type' => 'int',
     'not null' => TRUE,
     'default' => 0,
@@ -100,5 +100,5 @@ function profile2_regpath_update_7110() {
  * Implements hook_update_n().
  */
 function profile2_regpath_update_7120() {
-  drupal_set_message('The Profile2 Registration Path URL pattern has changed. Please check your site to be sure that this has not broken any links.');
+  drupal_set_message(t('The Profile2 Registration Path URL pattern has changed. Please check your site to be sure that this has not broken any links.'));
 }
