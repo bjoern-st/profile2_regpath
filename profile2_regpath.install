@@ -94,3 +94,11 @@ function profile2_regpath_update_7110() {
   );
   db_add_field('profile2_regpath', 'weight', $weight_specs);
 }
+
+
+/**
+ * Implements hook_update_n().
+ */
+function profile2_regpath_update_7120() {
+  drupal_set_message('The Profile2 Registration Path URL pattern has changed. Please check your site to be sure that this has not broken any links.');
+}

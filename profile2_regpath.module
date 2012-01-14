@@ -290,7 +290,7 @@ function profile2_regpath_save_settings($form, &$form_state) {
   if ($form['regpath']['path']['#default_value'] != $form_state['values']['path']) {
     if (menu_rebuild()) {
       $path = $form_state['values']['path'] . '/register';
-      drupal_set_message(t('The menu table has been rebuilt to include the new registration path "@path".', array('@path' => $path)));
+      drupal_set_message(t('The menu system has been rebuilt.'));
     }
   }
 }
