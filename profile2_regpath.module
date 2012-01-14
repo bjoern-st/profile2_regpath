@@ -14,6 +14,7 @@ function profile2_regpath_menu() {
   // Define settings block on administrative configuration page.
   $items['admin/config/profile2_regpath'] = array(
     'title' => 'Profile2',
+    'description' => 'Profile2 Settings',
     'page callback' => 'system_admin_menu_block_page',
     'access arguments' => array('administer profile2_regpath'),
     'file' => 'system.admin.inc',
@@ -31,7 +32,7 @@ function profile2_regpath_menu() {
   $reg_paths = profile2_regpath_get_paths();
   if ($reg_paths) {
     // Set menu items for each registration path.
-    foreach($reg_paths as $key => $value) {
+    foreach ($reg_paths as $key => $value) {
       // We will use hook_menu_alter() to deal with the 'user' path.
       if ($value->path != 'user') {
         $items[$value->path] = array(
@@ -286,7 +287,7 @@ function profile2_regpath_save_settings($form, &$form_state) {
     ->execute();
 
   // Rebuild the menu if a registration path has been changed.
-  if ($form['regpath']['path']['#default_value'] != $form_state['values']['path']){
+  if ($form['regpath']['path']['#default_value'] != $form_state['values']['path']) {
     if (menu_rebuild()) {
       $path = $form_state['values']['path'] . '/register';
       drupal_set_message(t('The menu table has been rebuilt to include the new registration path "@path".', array('@path' => $path)));
@@ -305,20 +306,19 @@ function profile2_regpath_profile2_type_delete($type) {
 }
 
 /**
- * Intercept requests to build user/register form.
- * Implements hook
+ * Implements hook_form_FORM_ID_alter().
  */
 function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $form_id) {
   // Get profile2 profile types from current path.
   $type_names = get_profile_type_by_path();
-  
-  // Check for $type_names in $_SESSION in case this is an AJAX request.
+
+  // Check for $type_names in $_SESSION in case form is being rebuilt after an AJAX request.
   if (!$type_names && arg(0) == 'system' && arg(1) == 'ajax' && isset($_SESSION['p2rp_profile_types'])) {
     $type_names =  $_SESSION['p2rp_profile_types'];
   }
 
   if ($type_names != NULL) {
-    // We need to store this in $_SESSION to accomodate subsequent AJAX requests,
+    // Accomodates subsequent form rebuilds after AJAX requests,
     // which cannot properly access arg(0) in get_profile_type_by_path().
     $_SESSION['p2rp_profile_types'] = $type_names;
 
@@ -339,7 +339,7 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
 }
 
 /**
- * Helper function to provide profile_id by profile machine_name.
+ * Provides profile_id by profile machine_name.
  */
 function profile2_regpath_get_profile_id($profile_type) {
   $profile_id = db_query("SELECT id FROM {profile_type} WHERE type = :profile_type", array(':profile_type' => $profile_type))->fetchField();
@@ -406,7 +406,7 @@ function profile2_regpath_user_presave(&$edit, $account, $category) {
 }
 
 /**
- * Helper function to get profile2 profile type from current path.
+ * Returns profile2 profile types from current path.
  */
 function get_profile_type_by_path() {
   $profile_types = NULL;
@@ -417,7 +417,9 @@ function get_profile_type_by_path() {
 
 /**
  * Helper function to get all registration paths.
- * @params optionally pass in path value for WHERE condition.
+ *
+ * @params $path
+ *   Optionally pass in path value for WHERE condition.
  */
 function profile2_regpath_get_paths($path = NULL) {
   // Get data object of all registration paths.
@@ -425,7 +427,9 @@ function profile2_regpath_get_paths($path = NULL) {
   $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
   $query->fields('pr', array('path'));
   $query->fields('pt', array('id', 'label', 'type'));
-  if ($path) { $query->condition('path', $path); }
+  if ($path) { 
+    $query->condition('path', $path); 
+  }
   $result = $query->execute();
   $reg_paths = $result->fetchAll();
 

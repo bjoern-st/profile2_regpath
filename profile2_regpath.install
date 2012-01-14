@@ -36,7 +36,7 @@ function profile2_regpath_schema() {
         'default' => 0,
       ),
       'weight' => array(
-        'description' => 'Weight of Profile Type',
+        'description' => 'Weight of profile type',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
