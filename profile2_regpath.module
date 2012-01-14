@@ -318,10 +318,10 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
   }
 
   if ($type_names != NULL) {
-    // We need to store this in $_SESSION to accomodate AJAX requests, which cannot
-    // access arg(0) in get_profile_type_by_path().
+    // We need to store this in $_SESSION to accomodate subsequent AJAX requests,
+    // which cannot properly access arg(0) in get_profile_type_by_path().
     $_SESSION['p2rp_profile_types'] = $type_names;
-     
+
     // Attach profile(s) to user/register form.
     foreach ($type_names as $key => $value) {
       // Get profile object.
