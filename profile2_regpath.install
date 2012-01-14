@@ -41,6 +41,12 @@ function profile2_regpath_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'misc' => array(
+        'description' => 'Miscellaneous display settings',
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ),
     ),
     'primary key' => array('profile_id'),
     'indexes' => array(
@@ -101,4 +107,18 @@ function profile2_regpath_update_7110() {
  */
 function profile2_regpath_update_7120() {
   drupal_set_message(t('The Profile2 Registration Path URL pattern has changed. Please check your site to be sure that this has not broken any links.'));
+}
+
+/**
+ * Implements hook_update_n().
+ */
+function profile2_regpath_update_7130() {
+  // Add weight column.
+  $misc_specs = array(
+    'description' => 'Miscellaneous display settings',
+    'type' => 'text',
+    'size' => 'big',
+    'not null' => FALSE,
+  );
+  db_add_field('profile2_regpath', 'misc', $misc_specs);
 }

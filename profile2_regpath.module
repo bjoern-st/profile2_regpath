@@ -133,7 +133,7 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
 
     $form['regpath']['roles'] = array(
       '#type' => 'checkboxes',
-      '#title' => t('Automatically assign roles during registration'),
+      '#title' => t('Assign roles during registration'),
       '#description' => t('Please select any roles that you would like to automatically assign to users registering via this registration path.'),
       '#options' => $roles,
       '#default_value' => is_object($settings) && $settings->roles ? unserialize($settings->roles) : array(),
@@ -142,6 +142,22 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
           'input[name="status"]' => array('checked' => FALSE),
         ),
       ),
+    );
+
+    $misc = unserialize($settings->misc);
+    $form['regpath']['fieldset_wrap'] = array(
+      '#type' => 'checkbox',
+      '#title' => 'Wrap profile fields in a fieldset',
+      '#description' => t('If checked, all profile fields for this profile type will be wrapped in a fieldset titled @label on the user registration form.', array('@label' => '')),
+      '#default_value' => is_object($settings) && $misc['fieldset_wrap'] ? $misc['fieldset_wrap'] : 0,
+    );
+
+    $form['regpath']['weight'] = array(
+      '#type' => 'select',
+      '#title' => t('Weight'),
+      '#description' => t('If multiple sets of profile fields are attached to a single registration path, they will be sorted in ascending order by weight.'),
+      '#options' => drupal_map_assoc(range(-10, 10, 1)),
+      '#default_value' => is_object($settings) && $settings->weight ? $settings->weight : 0,
     );
 
     // Add new validate and submit handlers.
@@ -159,6 +175,7 @@ function profile2_regpath_validate_settings($form, &$form_state) {
     if (profile2_regpath_url_validator(trim($form_state['values']['path'])) == FALSE) {
       form_set_error('path', 'Error, you did not enter a valid URL.');
     }
+    // @todo Check to see if another module is using the selected path(s).
   }
 }
 
@@ -214,10 +231,14 @@ function profile2_regpath_save_settings($form, &$form_state) {
   $fields = array(
       'path' => $form_state['values']['path'],
       'status' => $form_state['values']['status'],
+      'weight' => $form_state['values']['weight'],
   );
 
   // Add roles if enabled.
   $fields['roles'] = serialize($form_state['values']['roles']);
+  $fields['misc'] = serialize(array(
+    'fieldset_wrap' => $form_state['values']['fieldset_wrap'],
+  ));
 
   // Add settings to database.
   db_merge('profile2_regpath')
@@ -265,14 +286,22 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
     foreach ($type_names as $key => $value) {
       // Get profile object.
       $type_name = (string) $type_names[$key]->type;
-      $get_profile = profile2_get_types($type_name);
+      $profile_type = profile2_get_types($type_name);
       // Add profile object to $form_state.
       if (empty($form_state['profiles'][$type_name])) {
         $form_state['profiles'][$type_name] = profile_create(array('type' => $type_name));
-      }
+       }
 
       // Trigger Profile2 to attach fields from profile defined in $form_state.
       profile2_attach_form($form, $form_state);
+      $misc = unserialize($type_names[$key]->misc);
+      if ($misc['fieldset_wrap']) {
+        // Wrap each profile form in a fieldset.
+        $form['profile_' . $type_name] += array(
+          '#type' => 'fieldset',
+          '#title' => check_plain($profile_type->label),
+        );
+      }
     }
   }
 }
@@ -350,7 +379,17 @@ function profile2_regpath_user_presave(&$edit, $account, $category) {
 function get_profile_type_by_path() {
   $profile_types = NULL;
   $path = arg(0);
-  $profile_types = db_query("SELECT pt.type FROM {profile_type} pt LEFT JOIN {profile2_regpath} pr ON pt.id = pr.profile_id WHERE pr.path = :path AND pr.status = 1", array(':path' => $path))->fetchAll();
+
+  $query = db_select('profile2_regpath', 'pr');
+  $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
+  $query->fields('pr', array('path', 'misc', 'status'));
+  $query->fields('pt', array('id', 'label', 'type'));
+  $query->condition('pr.path', $path);
+  $query->condition('pr.status', 1);
+  $query->orderBy('pr.weight', 'ASC');
+  $result = $query->execute();
+  $profile_types = $result->fetchAll();
+
   return $profile_types;
 }
 
