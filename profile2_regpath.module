@@ -18,7 +18,7 @@ function profile2_regpath_menu() {
       // We will use hook_menu_alter() to deal with the 'user' path.
       if ($value->path != 'user') {
         $items[$value->path] = array(
-          'title' => 'Create new account',
+          'title' => 'Log in',
           'page callback' => '_profile2_regpath_user_login',
           'access callback' => 'user_is_anonymous',
           'file' => 'registration_form.inc',
