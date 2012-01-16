@@ -11,10 +11,10 @@
 function profile2_regpath_menu() {
   $items = array();
 
-  $reg_paths = profile2_regpath_get_paths();
-  if ($reg_paths) {
+  $profile_types = profile2_regpath_get_profiles();
+  if ($profile_types) {
     // Set menu items for each registration path.
-    foreach ($reg_paths as $key => $value) {
+    foreach ($profile_types as $key => $value) {
       // We will use hook_menu_alter() to deal with the 'user' path.
       if ($value->path != 'user') {
         $items[$value->path] = array(
@@ -58,7 +58,7 @@ function profile2_regpath_menu() {
  */
 function profile2_regpath_menu_alter(&$items) {
   // Check to see if the default 'user' path is being used with Profile2.
-  if ($user_paths = profile2_regpath_get_paths('user')) {
+  if ($user_paths = profile2_regpath_get_profiles('user')) {
     $pids = array();
     foreach ($user_paths as $key => $value) {
       $pids[] = $user_paths[$key]->id;
@@ -112,18 +112,28 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
       '#default_value' => is_object($settings) && $settings->status ? $settings->status : 0,
       '#description' => t("If checked, a unique registration page utilizing this profile type's fields will be available at the specified URL."),
     );
+    $form['regpath']['settings'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Settings'),
+      '#states' => array(
+        'invisible' => array(
+          'input[name="status"]' => array('checked' => FALSE),
+        ),
+      ),
+    );
     // @todo add unlimited cardinality to the path field.
-    $form['regpath']['path'] = array(
+    $form['regpath']['settings']['path'] = array(
       '#type' => 'textfield',
       '#title' => t('URL path'),
       '#field_prefix' => $base_url . '/',
       '#field_suffix' => '/register',
       '#default_value' => is_object($settings) && $settings->path ? $settings->path : '',
-      '#description' => t('Please enter the portion of the URL that will follow the default registration path. Do not include leading or trailing slashes.'),
-      '#states' => array(
-        'invisible' => array(
-          'input[name="status"]' => array('checked' => FALSE),
-        ),
+      '#description' => t('Please enter the base URL for this registration path.
+        <ul>
+          <li>Menu router items for [path], [path]/register, [path]/login, and [path]/password will be generated.</li>
+          <li>You may use the "user" base path to attach this profile to the default user registration form.</li>
+          <li>Do not include leading or trailing slashes.</li>
+        </ul>'
       ),
       '#multiple' => TRUE,
     );
@@ -132,28 +142,23 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
     $roles = user_roles(TRUE);
     unset($roles[DRUPAL_AUTHENTICATED_RID]);
 
-    $form['regpath']['roles'] = array(
+    $form['regpath']['settings']['roles'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Assign roles during registration'),
       '#description' => t('Please select any roles that you would like to automatically assign to users registering via this registration path.'),
       '#options' => $roles,
       '#default_value' => is_object($settings) && $settings->roles ? unserialize($settings->roles) : array(),
-      '#states' => array(
-        'invisible' => array(
-          'input[name="status"]' => array('checked' => FALSE),
-        ),
-      ),
     );
 
     $misc = unserialize($settings->misc);
-    $form['regpath']['fieldset_wrap'] = array(
+    $form['regpath']['settings']['fieldset_wrap'] = array(
       '#type' => 'checkbox',
       '#title' => 'Wrap profile fields in a fieldset',
       '#description' => t('If checked, all profile fields for this profile type will be wrapped in a fieldset titled @label on the user registration form.', array('@label' => '')),
       '#default_value' => is_object($settings) && $misc['fieldset_wrap'] ? $misc['fieldset_wrap'] : 0,
     );
 
-    $form['regpath']['weight'] = array(
+    $form['regpath']['settings']['weight'] = array(
       '#type' => 'select',
       '#title' => t('Weight'),
       '#description' => t('If multiple sets of profile fields are attached to a single registration path, they will be sorted in ascending order by weight.'),
@@ -168,7 +173,7 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
 }
 
 /**
- * Helper function to validate profile settings.
+ * Validate profile settings form values.
  */
 function profile2_regpath_validate_settings($form, &$form_state) {
   if ($form_state['values']['status'] == 1) {
@@ -176,18 +181,23 @@ function profile2_regpath_validate_settings($form, &$form_state) {
     if (profile2_regpath_url_validator(trim($form_state['values']['path'])) == FALSE) {
       form_set_error('path', 'Error, you did not enter a valid URL.');
     }
-    // @todo Check to see if another module is using the selected path(s).
-    /*
-    if (drupal_lookup_path('alias', $form_state['values']['path']) || drupal_lookup_path('system', $form_state['values']['path'])) {
-      // Must make exceptions for '/user' and other p2rp registered paths.
-      form_set_error('path', 'Error, that base path is already in use.');
+    // Check to see if another module is using the selected path.
+    // We must make exceptions for '/user' and other p2rp registered paths.
+    if ($form_state['values']['path'] != 'user' && $existing_item = menu_get_item($form_state['values']['path'])) {
+      if ($existing_item['page_callback'] != '_profile2_regpath_user_login') {
+        form_set_error('path', 'Error, that base path is already being used by another module.');
+      }
     }
-    */
+    // Check to see if selected path is being used by an alias.
+    if ($existing_alias = drupal_lookup_path('source', $form_state['values']['path'])) {
+      form_set_error('path', t('Error, that base path is already being used as an alias. Please select a different base path or remove the alias.'));
+    }
+
   }
 }
 
 /**
- * Helper function to recognize valid URL patterns.
+ * Recognizes valid URL patterns.
  */
 function profile2_regpath_url_validator($url) {
   $LINK_ICHARS_DOMAIN = (string) html_entity_decode(implode("", array(
@@ -254,7 +264,7 @@ function profile2_regpath_save_settings($form, &$form_state) {
     ->execute();
 
   // Rebuild the menu if a registration path has been changed.
-  if ($form['regpath']['path']['#default_value'] != $form_state['values']['path']) {
+  if ($form['regpath']['settings']['path']['#default_value'] != $form_state['values']['path']) {
     if (menu_rebuild()) {
       $path = $form_state['values']['path'] . '/register';
       drupal_set_message(t('The menu system has been rebuilt.'));
@@ -277,22 +287,22 @@ function profile2_regpath_profile2_type_delete($type) {
  */
 function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $form_id) {
   // Get profile2 profile types from current path.
-  $type_names = get_profile_type_by_path();
+  $profile_types = _get_profile_types_by_path();
 
-  // Check for $type_names in $_SESSION in case form is being rebuilt after an AJAX request.
-  if (!$type_names && arg(0) == 'system' && arg(1) == 'ajax' && isset($_SESSION['p2rp_profile_types'])) {
-    $type_names =  $_SESSION['p2rp_profile_types'];
+  // Check for $profile_types in $_SESSION in case form is being rebuilt after an AJAX request.
+  if (!$profile_types && arg(0) == 'system' && arg(1) == 'ajax' && isset($_SESSION['p2rp_profile_types'])) {
+    $profile_types =  $_SESSION['p2rp_profile_types'];
   }
 
-  if ($type_names != NULL) {
+  if ($profile_types != NULL) {
     // Accomodates subsequent form rebuilds after AJAX requests,
-    // which cannot properly access arg(0) in get_profile_type_by_path().
-    $_SESSION['p2rp_profile_types'] = $type_names;
+    // which cannot properly access arg(0) in _get_profile_types_by_path().
+    $_SESSION['p2rp_profile_types'] = $profile_types;
 
     // Attach profile(s) to user/register form.
-    foreach ($type_names as $key => $value) {
+    foreach ($profile_types as $key => $value) {
       // Get profile object.
-      $type_name = (string) $type_names[$key]->type;
+      $type_name = (string) $profile_types[$key]->type;
       $profile_type = profile2_get_types($type_name);
       // Add profile object to $form_state.
       if (empty($form_state['profiles'][$type_name])) {
@@ -301,7 +311,7 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
 
       // Trigger Profile2 to attach fields from profile defined in $form_state.
       profile2_attach_form($form, $form_state);
-      $misc = unserialize($type_names[$key]->misc);
+      $misc = unserialize($profile_types[$key]->misc);
       if ($misc['fieldset_wrap']) {
         // Wrap each profile form in a fieldset.
         $form['profile_' . $type_name] += array(
@@ -333,7 +343,7 @@ function profile2_regpath_user_presave(&$edit, $account, $category) {
     $roles_to_add = array();
 
     // Get profile2 profile type from current path.
-    $profile_types = get_profile_type_by_path();
+    $profile_types = _get_profile_types_by_path();
 
     if ($profile_types != NULL) {
       $selected_roles = array();
@@ -341,13 +351,13 @@ function profile2_regpath_user_presave(&$edit, $account, $category) {
       foreach ($profile_types as $key => $value) {
         // Grab specified roles for this profile type.
         $profile_type = $profile_types[$key]->type;
-        $roles = db_query("
-          SELECT pr.roles FROM {profile2_regpath} pr
-          LEFT JOIN {profile_type} pt
-            ON pr.profile_id = pt.id
-          WHERE pt.type = :type_name",
-          array(':type_name' => $profile_type))
-          ->fetchField();
+
+        $query = db_select('profile2_regpath', 'pr');
+        $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
+        $query->fields('pr', array('roles'));
+        $query->condition('pt.type', $profile_type);
+        $result = $query->execute();
+        $roles = $result->fetchField();
 
         if ($roles) {
           // Build necessary arrays.
@@ -383,40 +393,32 @@ function profile2_regpath_user_presave(&$edit, $account, $category) {
 /**
  * Returns profile2 profile types from current path.
  */
-function get_profile_type_by_path() {
-  $profile_types = NULL;
-  $path = arg(0);
+function _get_profile_types_by_path() {
+  $current_path = arg(0);
+  $profile_types = profile2_regpath_get_profiles($current_path);
 
+  return $profile_types;
+}
+
+/**
+ * Returns object containing all p2rp registration paths.
+ *
+ * @params $path
+ *   Optionally pass in path value for WHERE condition.
+ */
+function profile2_regpath_get_profiles($path = NULL) {
+  // Get data object of all registration paths.
   $query = db_select('profile2_regpath', 'pr');
   $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
   $query->fields('pr', array('path', 'misc', 'status'));
   $query->fields('pt', array('id', 'label', 'type'));
-  $query->condition('pr.path', $path);
+  if ($path) { 
+    $query->condition('path', $path); 
+  }
   $query->condition('pr.status', 1);
   $query->orderBy('pr.weight', 'ASC');
   $result = $query->execute();
   $profile_types = $result->fetchAll();
 
   return $profile_types;
-}
-
-/**
- * Helper function to get all registration paths.
- *
- * @params $path
- *   Optionally pass in path value for WHERE condition.
- */
-function profile2_regpath_get_paths($path = NULL) {
-  // Get data object of all registration paths.
-  $query = db_select('profile2_regpath', 'pr');
-  $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
-  $query->fields('pr', array('path'));
-  $query->fields('pt', array('id', 'label', 'type'));
-  if ($path) { 
-    $query->condition('path', $path); 
-  }
-  $result = $query->execute();
-  $reg_paths = $result->fetchAll();
-
-  return $reg_paths;
 }
