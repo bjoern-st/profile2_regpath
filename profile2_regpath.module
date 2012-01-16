@@ -20,6 +20,9 @@ function profile2_regpath_menu() {
         $items[$value->path] = array(
           'title' => 'Log in',
           'page callback' => '_profile2_regpath_user_login',
+          'page arguments' => array(
+            'profile' => $value,
+          ),
           'access callback' => 'user_is_anonymous',
           'file' => 'registration_form.inc',
           'menu_name' => 'user-menu',
@@ -28,7 +31,9 @@ function profile2_regpath_menu() {
         $items[$value->path . '/login'] = array(
           'title' => 'Log in',
           'page callback' => '_profile2_regpath_user_login',
-          'page arguments' => array(array('profile' => $value)),
+          'page arguments' => array(
+            'profile' => $value,
+          ),
           'access callback' => 'user_is_anonymous',
           'file' => 'registration_form.inc',
           'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -36,7 +41,9 @@ function profile2_regpath_menu() {
         $items[$value->path . '/register'] = array(
           'title' => 'Create new account',
           'page callback' => '_profile2_regpath_user_register',
-          'page arguments' => array(array('profile' => $value)),
+          'page arguments' => array(
+            'profile' => $value,
+          ),
           'access callback' => 'user_is_anonymous',
           'file' => 'registration_form.inc',
           'type' => MENU_LOCAL_TASK,
@@ -45,7 +52,9 @@ function profile2_regpath_menu() {
           'title' => 'Request new password',
           'type' => MENU_LOCAL_TASK,
           'page callback' => '_profile2_regpath_user_password',
-          'page arguments' => array(array('profile' => $value)),
+          'page arguments' => array(
+            'profile' => $value,
+          ),
           'access callback' => 'user_is_anonymous',
           'file' => 'registration_form.inc',
         );
