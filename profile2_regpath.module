@@ -58,6 +58,19 @@ function profile2_regpath_menu() {
           'access callback' => 'user_is_anonymous',
           'file' => 'registration_form.inc',
         );
+        // Add profile-specific administrative 'add user' page.
+        // @todo need to do this by path, not by profile.
+        $items['admin/people/p2rp-create/' . $value->path] = array(
+          'title' => 'Add user (' . $value->label . ' profile)',
+          'page callback' => '_profile2_regpath_user_register',
+          'page arguments' => array(
+            'profile' => $value,
+            'title' => 'Create',
+          ),
+          'access arguments' => array('administer users'),
+          'type' => MENU_LOCAL_ACTION,
+          'file' => 'registration_form.inc',
+        );
       }
     }
   }
@@ -331,6 +344,8 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
         );
       }
     }
+    
+    // @todo need to automatically check 'roles' checkboxes on admin 'add user' form.
   }
 }
 
@@ -405,9 +420,14 @@ function profile2_regpath_user_presave(&$edit, $account, $category) {
  * Returns profile2 profile types from current path.
  */
 function _get_profile_types_by_path() {
-  $current_path = arg(0);
+  // If this is an administrative 'add user' page.
+  if (arg(2) == 'p2rp-create') {
+    $current_path = arg(3);
+  }
+  else {
+    $current_path = arg(0);
+  }
   $profile_types = profile2_regpath_get_profiles($current_path);
-
   return $profile_types;
 }
 
