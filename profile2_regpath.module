@@ -416,6 +416,9 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
  *
  * @param string $profile_type
  *   Machine-name of profile2 profile type.
+ *
+ * @return string
+ *   The profile id for indicated profile type.
  */
 function profile2_regpath_get_profile_id($profile_type) {
   $profile_id = db_query("SELECT id FROM {profile_type} WHERE type = :profile_type", array(':profile_type' => $profile_type))->fetchField();
@@ -482,13 +485,18 @@ function profile2_regpath_user_presave(&$edit, $account, $category) {
 }
 
 /**
- * Returns profile2 profile types from current path.
+ * Returns profile2 profile types from the current path.
+ *
+ * @return object
+ *   An object containing all matching profile2 registration path enabled 
+ *   profile types.
  */
 function _get_profile_types_by_path() {
   // If this is an administrative 'add user' page.
   if (arg(2) == 'p2rp-create') {
     $current_path = arg(3);
   }
+  // Otherwise, use the first segment of the url path.
   else {
     $current_path = arg(0);
   }
@@ -504,6 +512,10 @@ function _get_profile_types_by_path() {
  *
  * @param string $groupby
  *   (optional) field to groupby. Default to NULL.
+ *
+ * @return object
+ *   An object containing all matching profile2 registration path enabled 
+ *   profile types.
  */
 function profile2_regpath_get_profiles($path = NULL, $groupby = NULL) {
   // Get data object of all registration paths.
