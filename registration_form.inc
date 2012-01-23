@@ -8,7 +8,7 @@
 /**
  * Page callback: Displays a user login form.
  *
- * Path: [path-setting]/user/login
+ * Path: [path-setting]/login
  *
  * @param object $profile
  *   Object containing single row from profile2_regpath_get_profiles() database
@@ -26,7 +26,7 @@ function _profile2_regpath_user_login($profile) {
 /**
  * Page callback: Displays a user registration form.
  *
- * Path: [path-setting]/user/register
+ * Path: [path-setting]/register
  *
  * @param object object $profile
  *   Object containing single row from profile2_regpath_get_profiles() database
@@ -44,7 +44,7 @@ function _profile2_regpath_user_register($profile) {
 /**
  * Page callback: Displays the forgot password form.
  *
- * Path: [path-setting]/user/password
+ * Path: [path-setting]/password
  *
  * @param object $profile
  *   Object containing single row from profile2_regpath_get_profiles() database
