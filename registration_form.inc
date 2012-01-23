@@ -66,7 +66,7 @@ function _profile2_regpath_user_password($profile) {
  *   Serialized array of settings from 'misc' column in {profile2_regpath}.
  *
  * @param string $key
- *   Array key for 'misc' array. This will determine which
+ *   Array key for 'misc' array. This will determine the title settings.
  */
 function _profile2_regpath_set_title($misc_serialized, $key) {
   // Look for custom title.
