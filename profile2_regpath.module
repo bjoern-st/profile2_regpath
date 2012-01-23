@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Attach profile2 form to registration form according to path
+ * Attach profile2 form to registration form according to path.
  */
 
 /**
@@ -141,7 +141,7 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
         ),
       ),
     );
-    // @todo add unlimited cardinality to the path field.
+    // @todo add unlimited cardinality to the path field OR change to textarea and loop through each line.
     $form['regpath']['settings']['path'] = array(
       '#type' => 'textfield',
       '#title' => t('URL path'),
@@ -250,7 +250,13 @@ function profile2_regpath_validate_settings($form, &$form_state) {
 }
 
 /**
- * Recognizes valid URL patterns.
+ * Verifies the syntax of the given URL.
+ *
+ * @param string $url
+ *   A string containing a URL.
+ *
+ * @return
+ *   TRUE if the URL is in a valid format, and FALSE if it isn't.
  */
 function profile2_regpath_url_validator($url) {
   $LINK_ICHARS_DOMAIN = (string) html_entity_decode(implode("", array(
@@ -407,6 +413,9 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
 
 /**
  * Provides profile_id by profile machine_name.
+ *
+ * @param string $profile_type
+ *   Machine-name of profile2 profile type.
  */
 function profile2_regpath_get_profile_id($profile_type) {
   $profile_id = db_query("SELECT id FROM {profile_type} WHERE type = :profile_type", array(':profile_type' => $profile_type))->fetchField();
@@ -490,8 +499,11 @@ function _get_profile_types_by_path() {
 /**
  * Returns object containing all p2rp registration paths.
  *
- * @params $path
- *   Optionally pass in path value for WHERE condition.
+ * @param string $path
+ *   (optional) path value for WHERE condition. Default to NULL.
+ *
+ * @param string $groupby
+ *   (optional) field to groupby. Default to NULL.
  */
 function profile2_regpath_get_profiles($path = NULL, $groupby = NULL) {
   // Get data object of all registration paths.
