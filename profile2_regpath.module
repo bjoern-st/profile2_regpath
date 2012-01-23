@@ -11,7 +11,7 @@
 function profile2_regpath_menu() {
   $items = array();
 
-  $profile_types = profile2_regpath_get_profiles(NULL, 'path');
+  $profile_types = profile2_regpath_get_profiles();
   if ($profile_types) {
     // Set menu items for each registration path.
     foreach ($profile_types as $key => $value) {
@@ -57,6 +57,7 @@ function profile2_regpath_menu() {
           'page arguments' => array(
             'profile' => $value,
             'title' => 'Create',
+            'description' => 'Add user using ' . $value ' profile fields',
           ),
           'access arguments' => array('administer users'),
           'type' => MENU_LOCAL_ACTION,
@@ -338,7 +339,7 @@ function profile2_regpath_save_settings($form, &$form_state) {
       'new' => $form_state['values']['password_title'],
     ),
   );
-  // Rebuild the menu if any of the following values have been changed. 
+  // Rebuild the menu if any of the following values have been changed.
   $REBUILD = FALSE;
   foreach ($changed_check as $field) {
     if ($field['default'] != $field['new'] && $REBUILD == FALSE) {
@@ -376,7 +377,7 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
     // Accomodates subsequent form rebuilds after AJAX requests,
     // which cannot properly access arg(0) in _get_profile_types_by_path().
     $_SESSION['p2rp_profile_types'] = $profile_types;
-
+    $roles = array();
     // Attach profile(s) to user/register form.
     foreach ($profile_types as $key => $value) {
       // Get profile object.
@@ -385,7 +386,7 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
       // Add profile object to $form_state.
       if (empty($form_state['profiles'][$type_name])) {
         $form_state['profiles'][$type_name] = profile_create(array('type' => $type_name));
-       }
+      }
 
       // Trigger Profile2 to attach fields from profile defined in $form_state.
       profile2_attach_form($form, $form_state);
@@ -397,9 +398,10 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
           '#title' => check_plain($profile_type->label),
         );
       }
+      // @todo need to automatically check 'roles' checkboxes on admin 'add user' form.
+      $roles[] = '';
     }
-    
-    // @todo need to automatically check 'roles' checkboxes on admin 'add user' form.
+    $form['account']['roles']['#default_value'] = $roles;
   }
 }
 
@@ -497,8 +499,8 @@ function profile2_regpath_get_profiles($path = NULL, $groupby = NULL) {
   $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
   $query->fields('pr', array('path', 'misc', 'status'));
   $query->fields('pt', array('id', 'label', 'type'));
-  if ($path) { 
-    $query->condition('path', $path); 
+  if ($path) {
+    $query->condition('path', $path);
   }
   if ($groupby) {
     $query->groupBy($groupby);
