@@ -57,7 +57,7 @@ function profile2_regpath_menu() {
           'page arguments' => array(
             'profile' => $value,
             'title' => 'Create',
-            'description' => 'Add user using ' . $value . ' profile fields',
+            'description' => 'Add user using ' . $value->label . ' profile fields',
           ),
           'access arguments' => array('administer users'),
           'type' => MENU_LOCAL_ACTION,
