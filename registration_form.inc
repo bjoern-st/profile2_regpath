@@ -34,8 +34,8 @@ function _profile2_regpath_set_title($misc_serialized, $key) {
   }
   // Set default title.
   else {
-    $title = 'User Account';
+    $title = 'User account';
   }
   // Set title.
-  drupal_set_title($title);
+  drupal_set_title(check_plain($title));
 }
