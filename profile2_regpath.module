@@ -75,14 +75,9 @@ function profile2_regpath_menu() {
 function profile2_regpath_menu_alter(&$items) {
   // Check to see if the default 'user' path is being used with Profile2.
   if ($user_paths = profile2_regpath_get_profiles('user')) {
-    $pids = array();
-    foreach ($user_paths as $key => $value) {
-      $pids[] = $user_paths[$key]->id;
-    }
-
     // Build form at user/register using _profile2_regpath_user_register().
     $items['user/register']['page callback'] = '_profile2_regpath_user_register';
-    $items['user/register']['page arguments'] = $pids;
+    $items['user/register']['page arguments'] = array($user_paths[0]);
     $items['user/register']['file'] = 'registration_form.inc';
     $items['user/register']['file path'] = drupal_get_path('module', 'profile2_regpath');
 
@@ -214,7 +209,7 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
     $form['regpath']['settings']['weight'] = array(
       '#type' => 'select',
       '#title' => t('Weight'),
-      '#description' => t('If multiple sets of profile fields are attached to a single registration path, they will be sorted in ascending order by weight.'),
+      '#description' => t("If multiple sets of profile fields are attached to a single registration path, they will be sorted in ascending order by weight. This will affect both the order of profile fields and the title settings."),
       '#options' => drupal_map_assoc(range(-10, 10, 1)),
       '#default_value' => is_object($settings) && $settings->weight ? $settings->weight : 0,
     );
@@ -371,6 +366,7 @@ function profile2_regpath_profile2_type_delete($type) {
  * Implements hook_form_FORM_ID_alter().
  */
 function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $form_id) {
+  global $user;
   // Get profile2 profile types from current path.
   $profile_types = _get_profile_types_by_path();
 
@@ -383,7 +379,11 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
     // Accomodates subsequent form rebuilds after AJAX requests,
     // which cannot properly access arg(0) in _get_profile_types_by_path().
     $_SESSION['p2rp_profile_types'] = $profile_types;
+
+    // Prepare varibles for roles.
+    $user_roles = user_roles(TRUE);
     $roles = array();
+
     // Attach profile(s) to user/register form.
     foreach ($profile_types as $key => $value) {
       // Get profile object.
@@ -404,10 +404,21 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
           '#title' => check_plain($profile_type->label),
         );
       }
-      // @todo need to automatically check 'roles' checkboxes on admin 'add user' form.
-      $roles[] = '';
+
+      // Add appropriate user roles.
+      $profile_roles = unserialize($value->roles);
+      foreach ($profile_roles as $rid => $value) {
+        // Add role to roles array if it isn't already there.
+        if ($value != 0 && !array_key_exists($rid, $form['account']['roles'])) {
+          $form['account']['roles'][$rid] = array(
+            '#type' => 'checkbox',
+            '#title' => $user_roles[$rid],
+            '#default_value' => TRUE,
+            '#disabled' => (user_access('administer users') ? FALSE : TRUE),
+          );
+        }
+      }
     }
-    $form['account']['roles']['#default_value'] = $roles;
   }
 }
 
@@ -423,65 +434,6 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
 function profile2_regpath_get_profile_id($profile_type) {
   $profile_id = db_query("SELECT id FROM {profile_type} WHERE type = :profile_type", array(':profile_type' => $profile_type))->fetchField();
   return $profile_id;
-}
-
-/**
- * Implements hook_user_presave().
- */
-function profile2_regpath_user_presave(&$edit, $account, $category) {
-
-  // Only assign roles if this is a new account.
-  if (isset($account->is_new) && !empty($account->is_new)) {
-    // Get the existing user roles with the exception of the anonymous role.
-    $user_roles = user_roles(TRUE);
-    $roles_to_add = array();
-
-    // Get profile2 profile type from current path.
-    $profile_types = _get_profile_types_by_path();
-
-    if ($profile_types != NULL) {
-      $selected_roles = array();
-
-      foreach ($profile_types as $key => $value) {
-        // Grab specified roles for this profile type.
-        $profile_type = $profile_types[$key]->type;
-
-        $query = db_select('profile2_regpath', 'pr');
-        $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
-        $query->fields('pr', array('roles'));
-        $query->condition('pt.type', $profile_type);
-        $result = $query->execute();
-        $roles = $result->fetchField();
-
-        if ($roles) {
-          // Build necessary arrays.
-          $roles = unserialize($roles);
-          foreach ($roles as $rid => $value) {
-            // Add role to $roles_to_add.
-            if ($value != 0) {
-              $selected_roles[$rid] = $user_roles[$rid];
-            }
-          }
-        }
-      }
-
-      // Add roles from $select_roles to user.
-      if (count($selected_roles) > 0) {
-        // This intermediary steps ensure that selected roles actually match those in {roles}.
-        $roles_to_add = array_intersect_key($user_roles, array_filter($selected_roles));
-
-        // Add in the new roles.
-        if ($roles_to_add != NULL && count((array)$roles_to_add) > 0) {
-          // Make sure the roles key exists.
-          if (!isset($edit['roles'])) {
-            $edit['roles'] = array();
-          }
-
-          $edit['roles'] = $roles_to_add + $edit['roles'];
-        }
-      }
-    }
-  }
 }
 
 /**
@@ -521,7 +473,7 @@ function profile2_regpath_get_profiles($path = NULL, $groupby = NULL) {
   // Get data object of all registration paths.
   $query = db_select('profile2_regpath', 'pr');
   $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
-  $query->fields('pr', array('path', 'misc', 'status'));
+  $query->fields('pr', array('path', 'roles', 'misc', 'status'));
   $query->fields('pt', array('id', 'label', 'type'));
   if ($path) {
     $query->condition('path', $path);
