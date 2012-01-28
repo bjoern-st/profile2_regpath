@@ -5,6 +5,9 @@
  * Attach profile2 form to registration form according to path.
  */
 
+// @todo Create tests
+// @todo Make profile2_regpath settings exportable via CTools.
+
 /**
  * Implements hook_menu().
  */

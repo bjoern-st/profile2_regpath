@@ -1,6 +1,5 @@
 name = Profile2 Registration Path
 description = Attach profile2 profile forms to profile-specific registration urls.
 core = 7.x
-
 dependencies[] = profile2
-configure = admin/structure/profiles
+files[] = profile2_regpath.test

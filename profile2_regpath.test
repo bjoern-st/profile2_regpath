@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * A suite of tests to test Profile2 Registration path functions.
+ */
+
+class Profile2RegPathTestCase extends DrupalWebTestCase {
+  protected $privileged_user;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Profile2 Registration Path',
+      'description' => 'Ensure that the Profile2 Registration Path module functions properly.',
+      'group' => 'Profile2 Registration Path',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp('profile2_regpath');  // Enable any modules required for the test
+    // Create and log in our user. This user has the 
+    // 'administer profile2 registration paths' permission.
+    $this->privileged_user = $this->drupalCreateUser(array('administer profile types', 'administer profile2_regpath'));
+    $this->drupalLogin($this->privileged_user);
+  }
+
+  // Create a Profile2 profile type.
+  public function testSimpleTestExampleCreate() {
+
+  }
+
+}
