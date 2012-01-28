@@ -24,9 +24,22 @@ class Profile2RegPathTestCase extends DrupalWebTestCase {
     $this->drupalLogin($this->privileged_user);
   }
 
-  // Create a Profile2 profile type.
+  // @todo Create a profile type.
   public function testSimpleTestExampleCreate() {
 
   }
 
+  // @todo Edit a profile type.
+  
+  // @todo Create two profile types that share the same path.
+  
+  // @todo Create profile type that uses the core registration path.
+  
+  // @todo Create a user via a p2rp registration path.
+  
+  // @todo Createa a user via the core registration path.
+
+  // @todo Test the assignment of user roles during registration. 
+  
+  // @todo Test changing the title of all three registration path pages.
 }
