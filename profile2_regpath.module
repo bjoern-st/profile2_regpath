@@ -412,7 +412,7 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
         if ($value != 0 && !array_key_exists($rid, $form['account']['roles'])) {
           $form['account']['roles'][$rid] = array(
             '#type' => 'checkbox',
-            '#title' => $user_roles[$rid],
+            '#title' => check_plain($user_roles[$rid]),
             '#default_value' => TRUE,
             '#disabled' => (user_access('administer users') ? FALSE : TRUE),
           );
