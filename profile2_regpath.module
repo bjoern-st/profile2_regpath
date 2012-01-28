@@ -488,7 +488,7 @@ function profile2_regpath_user_presave(&$edit, $account, $category) {
  * Returns profile2 profile types from the current path.
  *
  * @return object
- *   An object containing all matching profile2 registration path enabled 
+ *   An object containing all matching profile2 registration path enabled
  *   profile types.
  */
 function _get_profile_types_by_path() {
@@ -514,7 +514,7 @@ function _get_profile_types_by_path() {
  *   (optional) field to groupby. Default to NULL.
  *
  * @return object
- *   An object containing all matching profile2 registration path enabled 
+ *   An object containing all matching profile2 registration path enabled
  *   profile types.
  */
 function profile2_regpath_get_profiles($path = NULL, $groupby = NULL) {
