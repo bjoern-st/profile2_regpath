@@ -373,6 +373,13 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
   // Get profile2 profile types from current path.
   $profile_types = _get_profile_types_by_path();
 
+  profile2_regpath_attach_profile_fields($form, $form_state, $form_id);
+}
+
+/*
+ * Attach profile fields to form.
+ */
+function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, $profile_types = NULL) {
   // Check for $profile_types in $_SESSION in case form is being rebuilt after an AJAX request.
   if (!$profile_types && arg(0) == 'system' && arg(1) == 'ajax' && isset($_SESSION['p2rp_profile_types'])) {
     $profile_types =  $_SESSION['p2rp_profile_types'];
@@ -386,7 +393,7 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
     // Prepare varibles for roles.
     $user_roles = user_roles(TRUE);
     $roles = array();
-
+    dpm($profile_types);
     // Attach profile(s) to user/register form.
     foreach ($profile_types as $key => $value) {
       // Get profile object.
