@@ -71,7 +71,7 @@ function _profile2_regpath_user_password($profile) {
 function _profile2_regpath_set_title($misc_serialized, $key) {
   // Look for custom title.
   if ($misc = unserialize($misc_serialized)) {
-    if ($misc[$key]) {
+    if (array_key_exists($key, $misc)) {
       $title = $misc[$key];
     }
   }

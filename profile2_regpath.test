@@ -52,6 +52,25 @@ class Profile2RegPathTestCase extends DrupalWebTestCase {
       ),
     );
     field_create_instance($instance);
+    
+    // @todo add new role with rid 3.
+    
+    // Add entry to {profile2_regpath}
+    $profile_id = 1;
+    $fields = array(
+        'path' => 'test',
+        'status' => 1,
+        'weight' => 0,
+        'roles' => serialize(array('3')),
+        'misc' => serialize(array(
+          'fieldset_wrap' => 1,
+          'custom_titles' => 1,
+          'login_title' => 'Test Login',
+          'register_title' => 'Test Register',
+          'password_title' => 'Test Reset Password',
+        )),
+    );
+    profile2_regpath_write_settings($profile_id, $fields);
   }
 
   /**
@@ -64,7 +83,9 @@ class Profile2RegPathTestCase extends DrupalWebTestCase {
     profile2_save(profile_create(array('type' => 'test2', 'uid' => $user1->uid)));
     $profile = profile_create(array('type' => 'test', 'uid' => NULL));
     profile2_save($profile);
+    
 
+    
     $profiles = profile2_load_by_user($user1);
     $this->assertEqual($profiles['test']->label(), 'label', 'Created and loaded profile 1.');
     $this->assertEqual($profiles['test2']->label(), 'label2', 'Created and loaded profile 2.');
