@@ -369,11 +369,12 @@ function profile2_regpath_profile2_type_delete($type) {
  * Implements hook_form_FORM_ID_alter().
  */
 function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $form_id) {
-  global $user;
-  // Get profile2 profile types from current path.
-  $profile_types = _get_profile_types_by_path();
-
-  profile2_regpath_attach_profile_fields($form, $form_state, $form_id);
+  if (!isset($form['block_form'])) {
+    global $user;
+    // Get profile2 profile types from current path.
+    $profile_types = _get_profile_types_by_path();
+    profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
+  }
 }
 
 /*
@@ -393,7 +394,6 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
     // Prepare varibles for roles.
     $user_roles = user_roles(TRUE);
     $roles = array();
-    dpm($profile_types);
     // Attach profile(s) to user/register form.
     foreach ($profile_types as $key => $value) {
       // Get profile object.
@@ -479,7 +479,7 @@ function _get_profile_types_by_path() {
  *   An object containing all matching profile2 registration path enabled
  *   profile types.
  */
-function profile2_regpath_get_profiles($path = NULL, $groupby = NULL) {
+function profile2_regpath_get_profiles($path = NULL, $groupby = NULL, $pid = NULL) {
   // Get data object of all registration paths.
   $query = db_select('profile2_regpath', 'pr');
   $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
@@ -490,6 +490,9 @@ function profile2_regpath_get_profiles($path = NULL, $groupby = NULL) {
   }
   if ($groupby) {
     $query->groupBy($groupby);
+  }
+  if ($pid) {
+    $query->condition('profile_id', $pid);
   }
   $query->condition('pr.status', 1);
   $query->orderBy('pr.weight', 'ASC');

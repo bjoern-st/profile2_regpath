@@ -19,7 +19,7 @@
 function _profile2_regpath_user_login($profile) {
   module_load_include('pages.inc', 'user', 'user');
   $output = user_page();
-  _profile2_regpath_set_title($profile->misc, 'login_title');
+  _profile2_regpath_set_title($profile, 'login_title');
   return $output;
 }
 
@@ -37,7 +37,7 @@ function _profile2_regpath_user_login($profile) {
 function _profile2_regpath_user_register($profile) {
   module_load_include('pages.inc', 'user', 'user');
   $output = drupal_get_form('user_register_form');
-  _profile2_regpath_set_title($profile->misc, 'register_title');
+  _profile2_regpath_set_title($profile, 'register_title');
   return $output;
 }
 
@@ -55,22 +55,23 @@ function _profile2_regpath_user_register($profile) {
 function _profile2_regpath_user_password($profile) {
   module_load_include('pages.inc', 'user', 'user');
   $output = drupal_get_form('user_pass');
-  _profile2_regpath_set_title($profile->misc, 'password_title');
+  _profile2_regpath_set_title($profile, 'password_title');
   return $output;
 }
 
 /**
  * Sets page title for registration, login, and forgot password pages.
  *
- * @param $misc_serialized
- *   Serialized array of settings from 'misc' column in {profile2_regpath}.
+ * @param object $profile
+ *   Object containing single row from profile2_regpath_get_profiles() database
+ *   result.
  *
  * @param string $key
  *   Array key for 'misc' array. This will determine the title settings.
  */
-function _profile2_regpath_set_title($misc_serialized, $key) {
+function _profile2_regpath_set_title($profile, $key) {
   // Look for custom title.
-  if ($misc = unserialize($misc_serialized)) {
+  if (isset($profile->misc) && $misc = unserialize($profile->misc)) {
     if (array_key_exists($key, $misc)) {
       $title = $misc[$key];
     }
