@@ -232,6 +232,11 @@ function profile2_regpath_validate_settings($form, &$form_state) {
     if (profile2_regpath_url_validator(trim($form_state['values']['path'])) == FALSE) {
       form_set_error('path', 'Error, you did not enter a valid URL.');
     }
+    // Ensure that URL does not contain a '/'. 
+    // @todo move this to profile2_regpath_url_validator.
+    if (strpos($form_state['values']['path'], '/')) {
+      form_set_error('path', 'Error, you cannot use a "/" in your unique path. You may specify only a single segment of the URL.');
+    }
     // Check to see if another module is using the selected path.
     // We must make exceptions for '/user' and other p2rp registered paths.
     if ($form_state['values']['path'] != 'user' && $existing_item = menu_get_item($form_state['values']['path'])) {
