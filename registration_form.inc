@@ -70,7 +70,7 @@ function _profile2_regpath_user_password($profiles) {
  *   Array key for 'misc' array. This will determine the title settings.
  */
 function _profile2_regpath_set_title($profiles, $key) {
-  // Look for custom title.
+  // Look for custom title in foremost profile, according to weight.
   if (isset($profiles[0]->misc) && $misc = unserialize($profiles[0]->misc)) {
     if (array_key_exists($key, $misc)) {
       $title = $misc[$key];

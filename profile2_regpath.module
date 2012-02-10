@@ -17,11 +17,11 @@ function profile2_regpath_menu() {
   $reg_paths = profile2_regpath_get_reg_paths();
   if ($reg_paths) {
     // Set menu items for each registration path.
-    foreach ($reg_paths as $key => $value) {
+    foreach ($reg_paths as $key => $path) {
       // We will use hook_menu_alter() to deal with the 'user' path later.
-      if ($value->path != 'user') {
-        $profile_types = profile2_regpath_get_profiles($value->path);
-        $items[$value->path] = array(
+      if ($path != 'user') {
+        $profile_types = profile2_regpath_get_profiles($path);
+        $items[$path] = array(
           'title' => 'Log in',
           'page callback' => '_profile2_regpath_user_login',
           'page arguments' => array(
@@ -32,7 +32,7 @@ function profile2_regpath_menu() {
           'menu_name' => 'user-menu',
           'type' => MENU_CALLBACK,
         );
-        $items[$value->path . '/login'] = array(
+        $items[$path . '/login'] = array(
           'title' => 'Log in',
           'page callback' => '_profile2_regpath_user_login',
           'page arguments' => array(
@@ -42,7 +42,7 @@ function profile2_regpath_menu() {
           'file' => 'registration_form.inc',
           'type' => MENU_DEFAULT_LOCAL_TASK,
         );
-        $items[$value->path . '/register'] = array(
+        $items[$path . '/register'] = array(
           'title' => 'Create new account',
           'page callback' => '_profile2_regpath_user_register',
           'page arguments' => array(
@@ -52,7 +52,7 @@ function profile2_regpath_menu() {
           'file' => 'registration_form.inc',
           'type' => MENU_LOCAL_TASK,
         );
-        $items[$value->path . '/password'] = array(
+        $items[$path . '/password'] = array(
           'title' => 'Request new password',
           'type' => MENU_LOCAL_TASK,
           'page callback' => '_profile2_regpath_user_password',
@@ -63,7 +63,7 @@ function profile2_regpath_menu() {
           'file' => 'registration_form.inc',
         );
         // Add profile-specific administrative 'add user' page.
-        $items['admin/people/p2rp-create/' . $value->path] = array(
+        $items['admin/people/p2rp-create/' . $path] = array(
           'title' => 'Add user (' . $profile_types[0]->label . ' profile)',
           'page callback' => '_profile2_regpath_user_register',
           'page arguments' => array(
@@ -526,8 +526,7 @@ function profile2_regpath_get_reg_paths() {
   $query->groupBy('path');
   $query->condition('pr.status', 1);
   $result = $query->execute();
-  $reg_paths = $result->fetchAll();
+  $reg_paths = $result->fetchCol();
 
-  // @todo Need to switch this so that it returns array of paths, not array of objects with paths.
   return $reg_paths;
 }
