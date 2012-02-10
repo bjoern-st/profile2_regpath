@@ -14,16 +14,19 @@
 function profile2_regpath_menu() {
   $items = array();
 
-  $profile_types = profile2_regpath_get_profiles();
-  if ($profile_types) {
+  $reg_paths = profile2_regpath_get_reg_paths();
+  if ($reg_paths) {
     // Set menu items for each registration path.
-    foreach ($profile_types as $key => $value) {
-      // We will use hook_menu_alter() to deal with the 'user' path.
+    foreach ($reg_paths as $key => $value) {
+      // We will use hook_menu_alter() to deal with the 'user' path later.
       if ($value->path != 'user') {
+        $profile_types = profile2_regpath_get_profiles($value->path);
         $items[$value->path] = array(
           'title' => 'Log in',
           'page callback' => '_profile2_regpath_user_login',
-          'page arguments' => array($value),
+          'page arguments' => array(
+            'profiles' => $profile_types,
+          ),
           'access callback' => 'user_is_anonymous',
           'file' => 'registration_form.inc',
           'menu_name' => 'user-menu',
@@ -32,7 +35,9 @@ function profile2_regpath_menu() {
         $items[$value->path . '/login'] = array(
           'title' => 'Log in',
           'page callback' => '_profile2_regpath_user_login',
-          'page arguments' => array($value),
+          'page arguments' => array(
+            'profiles' => $profile_types,
+          ),
           'access callback' => 'user_is_anonymous',
           'file' => 'registration_form.inc',
           'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -40,7 +45,9 @@ function profile2_regpath_menu() {
         $items[$value->path . '/register'] = array(
           'title' => 'Create new account',
           'page callback' => '_profile2_regpath_user_register',
-          'page arguments' => array($value),
+          'page arguments' => array(
+            'profiles' => $profile_types,
+          ),
           'access callback' => 'user_is_anonymous',
           'file' => 'registration_form.inc',
           'type' => MENU_LOCAL_TASK,
@@ -49,18 +56,18 @@ function profile2_regpath_menu() {
           'title' => 'Request new password',
           'type' => MENU_LOCAL_TASK,
           'page callback' => '_profile2_regpath_user_password',
-          'page arguments' => array($value),
+          'page arguments' => array(
+            'profiles' => $profile_types,
+          ),
           'access callback' => 'user_is_anonymous',
           'file' => 'registration_form.inc',
         );
         // Add profile-specific administrative 'add user' page.
         $items['admin/people/p2rp-create/' . $value->path] = array(
-          'title' => 'Add user (' . $value->label . ' profile)',
+          'title' => 'Add user (' . $profile_types[0]->label . ' profile)',
           'page callback' => '_profile2_regpath_user_register',
           'page arguments' => array(
-            'profile' => $value,
-            'title' => 'Create',
-            'description' => 'Add user using ' . $value->label . ' profile fields',
+            'profiles' => $profile_types,
           ),
           'access arguments' => array('administer users'),
           'type' => MENU_LOCAL_ACTION,
@@ -386,6 +393,7 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
  */
 function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, $profile_types = NULL) {
   // Check for $profile_types in $_SESSION in case form is being rebuilt after an AJAX request.
+  // For the record: I don't like this approach. I feel that there must be a better solution.
   if (!$profile_types && arg(0) == 'system' && arg(1) == 'ajax' && isset($_SESSION['p2rp_profile_types'])) {
     $profile_types =  $_SESSION['p2rp_profile_types'];
   }
@@ -395,7 +403,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
     // which cannot properly access arg(0) in _get_profile_types_by_path().
     $_SESSION['p2rp_profile_types'] = $profile_types;
 
-    // Prepare varibles for roles.
+    // Prepare variables for roles.
     $user_roles = user_roles(TRUE);
     $roles = array();
 
@@ -459,26 +467,24 @@ function profile2_regpath_get_profile_id($profile_type) {
  *   profile types.
  */
 function _get_profile_types_by_path() {
-  // If this is an administrative 'add user' page.
-  if (arg(2) == 'p2rp-create') {
-    $current_path = arg(3);
+  $profile_types = NULL;
+  if ($menu_item = menu_get_item()) {
+    if (isset($menu_item['page_arguments']['profiles'])) {
+      $profile_types = $menu_item['page_arguments']['profiles'];
+    }
   }
-  // Otherwise, use the first segment of the url path.
-  else {
-    $current_path = arg(0);
-  }
-  $profile_types = profile2_regpath_get_profiles($current_path);
+
   return $profile_types;
 }
 
 /**
- * Returns object containing all p2rp registration paths.
+ * Returns object containing all p2rp data.
  *
  * @param string $path
- *   (optional) path value for WHERE condition. Default to NULL.
+ *   (optional) path value for WHERE condition. Defaults to NULL.
  *
  * @param string $groupby
- *   (optional) field to groupby. Default to NULL.
+ *   (optional) field to groupby. Defaults to NULL.
  *
  * @return object
  *   An object containing all matching profile2 registration path enabled
@@ -502,4 +508,24 @@ function profile2_regpath_get_profiles($path = NULL, $groupby = NULL) {
   $profile_types = $result->fetchAll();
 
   return $profile_types;
+}
+
+/**
+ * Returns object containing all p2rp registration paths.
+ *
+ * @return array
+ *   An array containing all active registration paths.
+ */
+function profile2_regpath_get_reg_paths() {
+  $reg_paths = NULL;
+  // Get data object of all registration paths.
+  $query = db_select('profile2_regpath', 'pr');
+  $query->fields('pr', array('path'));
+  $query->groupBy('path');
+  $query->condition('pr.status', 1);
+  $result = $query->execute();
+  $reg_paths = $result->fetchAll();
+
+  // @todo Need to switch this so that it returns array of paths, not array of objects with paths.
+  return $reg_paths;
 }
