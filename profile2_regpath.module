@@ -394,7 +394,9 @@ function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $f
 function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, $profile_types = NULL) {
   // Check for $profile_types in $_SESSION in case form is being rebuilt after an AJAX request.
   // For the record: I don't like this approach. I feel that there must be a better solution.
-  if (!$profile_types && arg(0) == 'system' && arg(1) == 'ajax' && isset($_SESSION['p2rp_profile_types'])) {
+  // See http://drupal.org/node/1117428.
+  $menu_item = menu_get_item();
+  if (!$profile_types && $menu_item['path'] = 'system/ajax' && isset($_SESSION['p2rp_profile_types'])) {
     $profile_types =  $_SESSION['p2rp_profile_types'];
   }
 
