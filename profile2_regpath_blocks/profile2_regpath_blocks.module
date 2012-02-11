@@ -27,18 +27,21 @@ function profile2_regpath_block_info() {
  */
 function profile2_regpath_block_view($delta = '') {
   global $user;
+  // set $block to NULL so that we have something to return for authenticated users.
+  $block = NULL;
 
-  //The $delta parameter tells us which block is being requested.
   switch ($delta) {
-
     // Generate content for each profile2 profile type's pcp block.
     default:
-      $type_name = str_replace('p2rp_register_', '', $delta);
-      $profile_type = profile2_get_types($type_name);
-      $block['subject'] = t('Register as @label', array('@label' => $profile_type->label));
-      
-      module_load_include('inc', 'profile2_regpath', 'registration_form');
-      $block['content'] = profile2_regpath_build_block_form($profile_type);
+      // Hide the block content from authenticated users.
+      if (!$user->uid) {
+        $type_name = str_replace('p2rp_register_', '', $delta);
+        $profile_type = profile2_get_types($type_name);
+        $block['subject'] = t('Register as @label', array('@label' => $profile_type->label));
+
+        module_load_include('inc', 'profile2_regpath', 'registration_form');
+        $block['content'] = profile2_regpath_build_block_form($profile_type);
+      }
       break;
   }
 
