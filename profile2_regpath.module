@@ -157,10 +157,10 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
         <ul>
           <li>Menu router items for [path], [path]/register, [path]/login, and [path]/password will be generated.</li>
           <li>You may use the "user" base path to attach this profile to the default user registration form.</li>
-          <li>Do not include leading or trailing slashes.</li>
+          <li>Do not include any slashes.</li>
         </ul>'
       ),
-      '#multiple' => TRUE,
+      '#size' => 20,
     );
 
     // Add textfields for custom titles on the login, register, and forgot password pages.
