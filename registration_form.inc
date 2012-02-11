@@ -10,16 +10,16 @@
  *
  * Path: [path-setting]/login
  *
- * @param object $profile2_regpath_get_profiles
+ * @param object $profiles
  *   Object containing single row from profile2_regpath_get_profiles() database
  *   result.
  *
  * @see profile2_regpath_menu()
  */
-function _profile2_regpath_user_login($profile) {
+function _profile2_regpath_user_login($profiles) {
   module_load_include('pages.inc', 'user', 'user');
   $output = user_page();
-  _profile2_regpath_set_title($profile, 'login_title');
+  _profile2_regpath_set_title($profiles, 'login_title');
   return $output;
 }
 
@@ -28,16 +28,16 @@ function _profile2_regpath_user_login($profile) {
  *
  * Path: [path-setting]/register
  *
- * @param object object $profile
+ * @param object object $profiles
  *   Object containing single row from profile2_regpath_get_profiles() database
  *   result.
  *
  * @see profile2_regpath_menu()
  */
-function _profile2_regpath_user_register($profile) {
+function _profile2_regpath_user_register($profiles) {
   module_load_include('pages.inc', 'user', 'user');
   $output = drupal_get_form('user_register_form');
-  _profile2_regpath_set_title($profile, 'register_title');
+  _profile2_regpath_set_title($profiles, 'register_title');
   return $output;
 }
 
@@ -46,32 +46,32 @@ function _profile2_regpath_user_register($profile) {
  *
  * Path: [path-setting]/password
  *
- * @param object $profile
+ * @param object $profiles
  *   Object containing single row from profile2_regpath_get_profiles() database
  *   result.
  *
  * @see profile2_regpath_menu()
  */
-function _profile2_regpath_user_password($profile) {
+function _profile2_regpath_user_password($profiles) {
   module_load_include('pages.inc', 'user', 'user');
   $output = drupal_get_form('user_pass');
-  _profile2_regpath_set_title($profile, 'password_title');
+  _profile2_regpath_set_title($profiles, 'password_title');
   return $output;
 }
 
 /**
  * Sets page title for registration, login, and forgot password pages.
  *
- * @param object $profile
+ * @param object $profiles
  *   Object containing single row from profile2_regpath_get_profiles() database
  *   result.
  *
  * @param string $key
  *   Array key for 'misc' array. This will determine the title settings.
  */
-function _profile2_regpath_set_title($profile, $key) {
-  // Look for custom title.
-  if (isset($profile->misc) && $misc = unserialize($profile->misc)) {
+function _profile2_regpath_set_title($profiles, $key) {
+  // Look for custom title in foremost profile, according to weight.
+  if (isset($profiles[0]->misc) && $misc = unserialize($profiles[0]->misc)) {
     if (array_key_exists($key, $misc)) {
       $title = $misc[$key];
     }
