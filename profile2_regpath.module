@@ -492,8 +492,8 @@ function _get_profile_types_by_path() {
  *   An object containing all matching profile2 registration path enabled
  *   profile types.
  */
-function profile2_regpath_get_profiles($path = NULL, $groupby = NULL) {
-  // Get data object of all registration paths.
+function profile2_regpath_get_profiles($path = NULL, $groupby = NULL, $pid = NULL) {
+   // Get data object of all registration paths.
   $query = db_select('profile2_regpath', 'pr');
   $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
   $query->fields('pr', array('path', 'roles', 'misc', 'status'));
@@ -503,6 +503,9 @@ function profile2_regpath_get_profiles($path = NULL, $groupby = NULL) {
   }
   if ($groupby) {
     $query->groupBy($groupby);
+  }
+  if ($pid) {
+    $query->condition('profile_id', $pid);
   }
   $query->condition('pr.status', 1);
   $query->orderBy('pr.weight', 'ASC');
