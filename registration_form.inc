@@ -10,7 +10,7 @@
  *
  * Path: [path-setting]/login
  *
- * @param object $profile
+ * @param object $profile2_regpath_get_profiles
  *   Object containing single row from profile2_regpath_get_profiles() database
  *   result.
  *

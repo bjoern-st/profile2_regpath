@@ -38,8 +38,6 @@ function profile2_regpath_block_view($delta = '') {
       $block['subject'] = t('Register as @label', array('@label' => $profile_type->label));
       
       module_load_include('inc', 'profile2_regpath', 'registration_form');
-      // This won't work unless _profile2_regpath_user_register() does the profile attaching,
-      // rather than using the path!
       $block['content'] = profile2_regpath_build_block_form($profile_type);
       break;
   }
@@ -50,17 +48,17 @@ function profile2_regpath_block_view($delta = '') {
 /*
  *
  */
-function profile2_regpath_build_block_form($profile) {
+function profile2_regpath_build_block_form($profile_type) {
   $form['block_form'] = array(
     '#type' => 'hidden',
     '#value' => TRUE,
   );
-  $form_state = array();
 
-  module_load_include('pages.inc', 'user', 'user');
-  $form = user_register_form($form, $form_state);
+  $form = drupal_get_form('user_register_form');
 
-  $profile_types = profile2_regpath_get_profiles(NULL, NULL, $profile->id);
+  $profile_types = profile2_regpath_get_profiles(NULL, NULL, $profile_type->id);
   profile2_regpath_attach_profile_fields($form, $form_state, 'user_register_form', $profile_types);
+  $form_state['#attributes'] = array();
+
   return $form;
 }
