@@ -49,12 +49,11 @@ function profile2_regpath_block_view($delta = '') {
  *
  */
 function profile2_regpath_build_block_form($profile_type) {
-  $form = drupal_get_form('user_register_form');
-  $form['block_form'] = array(
-    '#type' => 'hidden',
-    '#value' => TRUE,
-  );
+  // We build the form with the 'block' argument so that profile2_regpath does not attach fields
+  // via hook_form_alter().
+  $form = drupal_get_form('user_register_form', array('block' => TRUE));
   $profile_types = profile2_regpath_get_profiles(NULL, NULL, $profile_type->id);
   profile2_regpath_attach_profile_fields($form, $form_state, 'user_register_form', $profile_types);
+
   return $form;
 }

@@ -87,7 +87,7 @@ function profile2_regpath_menu_alter(&$items) {
   if ($user_paths = profile2_regpath_get_profiles('user')) {
     // Build form at user/register using _profile2_regpath_user_register().
     $items['user/register']['page callback'] = '_profile2_regpath_user_register';
-    $items['user/register']['page arguments'] = array($user_paths[0]);
+    $items['user/register']['page arguments'] = array($user_paths);
     $items['user/register']['file'] = 'registration_form.inc';
     $items['user/register']['file path'] = drupal_get_path('module', 'profile2_regpath');
 
@@ -381,12 +381,12 @@ function profile2_regpath_profile2_type_delete($type) {
  * Implements hook_form_FORM_ID_alter().
  */
 function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $form_id) {
-  dpm($form);
-  if (!isset($form['block_form'])) {
-    global $user;
+  // Check that we are not building the form for a block, in which case the fields are already attached.
+  if (!isset($form_state['build_info']['args'][0]['block'])) {
     // Get profile2 profile types from current path.
-    $profile_types = _get_profile_types_by_path();
-    profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
+    if ($profile_types = _get_profile_types_by_path()) {
+      profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
+    }
   }
 }
 
@@ -477,7 +477,6 @@ function _get_profile_types_by_path() {
       $profile_types = $menu_item['page_arguments']['profiles'];
     }
   }
-
   return $profile_types;
 }
 
