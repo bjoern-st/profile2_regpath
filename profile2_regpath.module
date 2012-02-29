@@ -385,8 +385,8 @@ function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
   if (strpos($form_id, 'profile2_regpath_form_block_') === 0) {
     $profile_types = profile2_regpath_get_profiles(NULL, NULL, $form_state['profile_type_id']);
     profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
-  }  
-  else {
+  }
+  else if ($form_id == 'user_register_form') {
     // Get profile2 profile types from current path.
     $profile_types = _get_profile_types_by_path();
     profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
