@@ -197,6 +197,32 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
           '#default_value' => is_object($settings) && isset($misc['password_title']) ? $misc['password_title'] : 'User Account',
           '#description' => t('Enter the title you want to display in the request new password page. The default title is <i>User Account</i>.')
     );
+    
+    // Add text fields for custom registration confirmation message.
+    $form['regpath']['settings']['confirmation_display'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Display a confirmation message after registration.'),
+      '#default_value' => is_object($settings) && isset($misc['confirmation_display']) ? $misc['confirmation_display'] : 0,
+      '#description' => t('Enabling this option display a custom confirmation message to the user after a successful registration.'),
+    );
+    $form['regpath']['settings']['confirmation_message'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Confirmation Message'),
+      '#default_value' => is_object($settings) && isset($misc['confirmation_message']) ? $misc['confirmation_message'] : '',
+      '#description' => t('Enter the confirmation message that you would like to display.'),
+      '#states' => array(
+        'invisible' => array(
+          'input[name="confirmation_display"]' => array('checked' => FALSE),
+        ),
+      ),
+    );
+    
+    $form['regpath']['settings']['fieldset_wrap'] = array(
+      '#type' => 'checkbox',
+      '#title' => 'Wrap profile fields in a fieldset',
+      '#description' => t('If checked, all profile fields for this profile type will be wrapped in a fieldset titled @label on the user registration form.', array('@label' => '')),
+      '#default_value' => is_object($settings) && isset($misc['fieldset_wrap']) ? $misc['fieldset_wrap'] : 0,
+    );
 
     // Add form fields for assigning roles during registration.
     $roles = user_roles(TRUE);
@@ -208,12 +234,6 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
       '#description' => t('Please select any roles that you would like to automatically assign to users registering via this registration path.'),
       '#options' => $roles,
       '#default_value' => is_object($settings) && $settings->roles ? unserialize($settings->roles) : array(),
-    );
-    $form['regpath']['settings']['fieldset_wrap'] = array(
-      '#type' => 'checkbox',
-      '#title' => 'Wrap profile fields in a fieldset',
-      '#description' => t('If checked, all profile fields for this profile type will be wrapped in a fieldset titled @label on the user registration form.', array('@label' => '')),
-      '#default_value' => is_object($settings) && isset($misc['fieldset_wrap']) ? $misc['fieldset_wrap'] : 0,
     );
 
     $form['regpath']['settings']['weight'] = array(
@@ -322,12 +342,15 @@ function profile2_regpath_save_settings($form, &$form_state) {
 
   // Add roles if enabled.
   $fields['roles'] = serialize($form_state['values']['roles']);
+  // Create array of miscellaneous display options.
   $fields['misc'] = serialize(array(
     'fieldset_wrap' => $form_state['values']['fieldset_wrap'],
     'custom_titles' => $form_state['values']['custom_titles'],
     'login_title' => $form_state['values']['login_title'],
     'register_title' => $form_state['values']['register_title'],
     'password_title' => $form_state['values']['password_title'],
+    'confirmation_display' => $form_state['values']['confirmation_display'],
+    'confirmation_message' => $form_state['values']['confirmation_message'],
   ));
 
   // Add settings to database.
@@ -401,14 +424,14 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
   // For the record: I don't like this approach. I feel that there must be a better solution.
   // See http://drupal.org/node/1117428.
   $menu_item = menu_get_item();
-  if (!$profile_types && $menu_item['path'] = 'system/ajax' && isset($_SESSION['p2rp_profile_types'])) {
-    $profile_types =  $_SESSION['p2rp_profile_types'];
+  if (!$profile_types && $menu_item['path'] = 'system/ajax' && isset($_SESSION['profile2_regpath']['profile_types'])) {
+    $profile_types =  $_SESSION['profile2_regpath']['profile_types'];
   }
 
   if ($profile_types != NULL) {
     // Accomodates subsequent form rebuilds after AJAX requests,
     // which cannot properly access arg(0) in _get_profile_types_by_path().
-    $_SESSION['p2rp_profile_types'] = $profile_types;
+    $_SESSION['profile2_regpath']['profile_types'] = $profile_types;
 
     // Prepare variables for roles.
     $user_roles = user_roles(TRUE);
@@ -449,7 +472,23 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
           );
         }
       }
+      
+      // Attach custom confirmation message to form for later display.
+      if ($misc['confirmation_display']) {
+        $_SESSION['profile2_regpath']['confirmation_message'] = $misc['confirmation_message'];
+      }
     }
+  }
+}
+
+/**
+ * Implements hook_user_insert().
+ */
+function profile2_regpath_user_insert(&$edit, $account, $category) {
+  // Show custom confirmation message.
+  if ($_SESSION['profile2_regpath']['confirmation_message']) {
+    drupal_set_message($_SESSION['profile2_regpath']['confirmation_message']);
+    unset($_SESSION['profile2_regpath']['confirmation_message']);
   }
 }
 
