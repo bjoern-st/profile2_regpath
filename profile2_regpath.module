@@ -380,13 +380,17 @@ function profile2_regpath_profile2_type_delete($type) {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function profile2_regpath_form_user_register_form_alter(&$form, &$form_state, $form_id) {
+function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
   // Check that we are not building the form for a block, in which case the fields are already attached.
-  if (!isset($form_state['build_info']['args'][0]['block'])) {
+  if (!isset($form_state['block_style'])) {
     // Get profile2 profile types from current path.
-    if ($profile_types = _get_profile_types_by_path()) {
+    if ($profile_types = _get_profile_types_by_path()) {  
       profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
     }
+  }
+  else {
+    $profile_types = profile2_regpath_get_profiles(NULL, NULL, $form_state['profile_type_id']);
+    profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
   }
 }
 
@@ -416,6 +420,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
       // Get profile object.
       $type_name = (string) $profile_types[$key]->type;
       $profile_type = profile2_get_types($type_name);
+
       // Add profile object to $form_state.
       if (empty($form_state['profiles'][$type_name])) {
         $form_state['profiles'][$type_name] = profile_create(array('type' => $type_name));
