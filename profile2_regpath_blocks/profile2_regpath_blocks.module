@@ -66,15 +66,10 @@ function profile2_regpath_build_block_form($profile_type) {
  */
 function profile2_regpath_blocks_forms($form_id, $args) {
   $forms = array();
-  if (0 !== strpos($form_id, 'profile2_regpath_form_block_')) {
-    return $forms;
-  }
-  
   if (strpos($form_id, 'profile2_regpath_form_block_') == 0) {
       $forms[$form_id] = array(
           'callback' => 'user_register_form',
       );
   }
-  
   return $forms;
 }

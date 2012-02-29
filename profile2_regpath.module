@@ -382,14 +382,13 @@ function profile2_regpath_profile2_type_delete($type) {
  */
 function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
   // Check that we are not building the form for a block, in which case the fields are already attached.
-  if (!isset($form_state['block_style'])) {
-    // Get profile2 profile types from current path.
-    if ($profile_types = _get_profile_types_by_path()) {  
-      profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
-    }
-  }
-  else {
+  if (strpos($form_id, 'profile2_regpath_form_block_') === 0) {
     $profile_types = profile2_regpath_get_profiles(NULL, NULL, $form_state['profile_type_id']);
+    profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
+  }  
+  else {
+    // Get profile2 profile types from current path.
+    $profile_types = _get_profile_types_by_path();
     profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
   }
 }
