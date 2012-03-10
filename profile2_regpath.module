@@ -484,7 +484,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
   // See http://drupal.org/node/1117428.
   $menu_item = menu_get_item();
 
-  if (!$profile_types && $menu_item['path'] == 'system/ajax' && isset($_SESSION['profile2_regpath']['profile_types'])) {
+  if (!$profile_types && ($menu_item['path'] == 'system/ajax' || $menu_item['path'] == 'file/ajax') && isset($_SESSION['profile2_regpath']['profile_types'])) {
     $profile_types =  $_SESSION['profile2_regpath']['profile_types'];
   }
 
