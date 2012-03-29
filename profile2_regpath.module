@@ -120,12 +120,28 @@ function profile2_regpath_menu_alter(&$items) {
  * Implements hook_permission().
  */
 function profile2_regpath_permission() {
-  return array(
+  $permissions = array(
     'administer profile2_regpath' => array(
       'title' => t('Administer Profile2 registration paths'),
       'description' => t('Enable and configure unique registration paths per Profile2 profile type.'),
     ),
   );
+
+  // Create permission for each profile type's administrative add user page.
+  if ($reg_paths = profile2_regpath_get_reg_paths()) {
+    foreach ($reg_paths as $key => $value) {
+      if ($value->path != 'user' && $profile_types = profile2_regpath_get_profiles($path)) {
+        $permissions = array(
+          'add user: ' . $profile_types[0]->type . ' profile' => array(
+            'title' => t('Create users :label', array(':label', $profile_types[0]->label)),
+            'description' => t('Enable and configure unique registration paths per Profile2 profile type.'),
+          ),
+        );
+      }
+    }
+  }
+
+  return $permissions;
 }
 
 /**
@@ -546,7 +562,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
  */
 function profile2_regpath_user_insert(&$edit, $account, $category) {
   // Show custom confirmation message.
-  if ($_SESSION['profile2_regpath']['confirmation_message']) {
+  if (isset($_SESSION['profile2_regpath']['confirmation_message'])) {
     drupal_set_message($_SESSION['profile2_regpath']['confirmation_message']);
     unset($_SESSION['profile2_regpath']['confirmation_message']);
   }
