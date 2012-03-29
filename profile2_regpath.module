@@ -126,7 +126,8 @@ function profile2_regpath_permission() {
       'description' => t('Enable and configure unique registration paths per Profile2 profile type.'),
     ),
   );
-
+  /*
+  // Partially completed http://drupal.org/node/1479212#comment-5790598
   // Create permission for each profile type's administrative add user page.
   if ($reg_paths = profile2_regpath_get_reg_paths()) {
     foreach ($reg_paths as $key => $value) {
@@ -140,7 +141,7 @@ function profile2_regpath_permission() {
       }
     }
   }
-
+  */
   return $permissions;
 }
 
