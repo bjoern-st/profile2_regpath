@@ -21,21 +21,8 @@ function profile2_regpath_menu() {
       $path = $value->path;
       // We will use hook_menu_alter() to deal with the 'user' path later.
       if ($path != 'user') {
-
         $profile_types = profile2_regpath_get_profiles($path);
-        $misc = unserialize($reg_paths[$key]->misc);
-        // Just set default values for this in the install file? I don't like checking.
-        if (isset($misc['path_type']) ? $path_type = $misc['path_type'] : $path_type = 'separate');
-        if ($path_type != 'tabs') {
-          $registration_path = $path . '/register';
-        }
-        else {
-          $registration_path = 'user/' . $path . '/register';
-          // Need to set tab text here too.
-          // Just set default values for this in the install file? I don't like checking.
-          // if (isset($misc['tab_text']) ? $path_type = $misc['tab_text'] : );
-          // $tab_text = 
-        }
+        $registration_path = $path . '/register';
 
         $items[$registration_path] = array(
           'title' => 'Create new account',
@@ -59,41 +46,38 @@ function profile2_regpath_menu() {
           'type' => MENU_LOCAL_ACTION,
           'file' => 'registration_form.inc',
         );
+        $items[$path] = array(
+          'title' => 'Log in',
+          'page callback' => '_profile2_regpath_user_login',
+          'page arguments' => array(
+            'profiles' => $profile_types,
+          ),
+          'access callback' => 'user_is_anonymous',
+          'file' => 'registration_form.inc',
+          'menu_name' => 'user-menu',
+          'type' => MENU_CALLBACK,
+        );
+        $items[$path . '/login'] = array(
+          'title' => 'Log in',
+          'page callback' => '_profile2_regpath_user_login',
+          'page arguments' => array(
+            'profiles' => $profile_types,
+          ),
+          'access callback' => 'user_is_anonymous',
+          'file' => 'registration_form.inc',
+          'type' => MENU_DEFAULT_LOCAL_TASK,
+        );
 
-        if ($path_type != 'tabs') {
-          $items[$path] = array(
-            'title' => 'Log in',
-            'page callback' => '_profile2_regpath_user_login',
-            'page arguments' => array(
-              'profiles' => $profile_types,
-            ),
-            'access callback' => 'user_is_anonymous',
-            'file' => 'registration_form.inc',
-            'menu_name' => 'user-menu',
-            'type' => MENU_CALLBACK,
-          );
-          $items[$path . '/login'] = array(
-            'title' => 'Log in',
-            'page callback' => '_profile2_regpath_user_login',
-            'page arguments' => array(
-              'profiles' => $profile_types,
-            ),
-            'access callback' => 'user_is_anonymous',
-            'file' => 'registration_form.inc',
-            'type' => MENU_DEFAULT_LOCAL_TASK,
-          );
-
-          $items[$path . '/password'] = array(
-            'title' => 'Request new password',
-            'type' => MENU_LOCAL_TASK,
-            'page callback' => '_profile2_regpath_user_password',
-            'page arguments' => array(
-              'profiles' => $profile_types,
-            ),
-            'access callback' => 'user_is_anonymous',
-            'file' => 'registration_form.inc',
-          );
-        }
+        $items[$path . '/password'] = array(
+          'title' => 'Request new password',
+          'type' => MENU_LOCAL_TASK,
+          'page callback' => '_profile2_regpath_user_password',
+          'page arguments' => array(
+            'profiles' => $profile_types,
+          ),
+          'access callback' => 'user_is_anonymous',
+          'file' => 'registration_form.inc',
+        );
       }
     }
   }
@@ -181,34 +165,6 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
       '#states' => array(
         'invisible' => array(
           'input[name="status"]' => array('checked' => FALSE),
-        ),
-      ),
-    );
-    // Choose method of URL generation, tabs or separate registration areas.
-    $form['regpath']['settings']['path_type'] = array(
-      '#type' => 'radios',
-      '#title' => t('Path type(s)'),
-      '#options' => array(
-        'tabs' => t('Tabs'),
-        'separate' => t('Separate environments'), 
-      ),
-      '#default_value' => is_object($settings) && isset($misc['path_type']) ? $misc['path_type'] : 'separate',
-      '#description' => t('Please select the type of page that you would like Profile2 Registration path to generate. <br />
-        <ul>
-          <li>Selecting "Tabs" will generate additional tabs to the default "user/register" path. E.g., [base_url]/user/[path].</li>
-          <li>Selecting "Separate environments" will generate a unique login, register, and forgot password page. E.g., [path]/register, [path]/login, [path]/password.</li>
-        </ul>
-      '),
-    );
-    // Add textfields for custom titles on the login, register, and forgot password pages.
-    $form['regpath']['settings']['tab_text'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Tab Text'),
-      '#default_value' => is_object($settings) && isset($misc['tab_text']) ? $misc['tab_text'] : 'Register as ' . $profile_type,
-      '#description' => t('Enter the menu title text for the registration tab.'),
-      '#states' => array(
-        'visible' => array(
-          'input[name="path_type"]' => array('value' => 'tabs'),
         ),
       ),
     );
@@ -410,8 +366,6 @@ function profile2_regpath_save_settings($form, &$form_state) {
   $fields['roles'] = serialize($form_state['values']['roles']);
   // Create array of miscellaneous display options.
   $fields['misc'] = serialize(array(
-    'path_type' => $form_state['values']['path_type'],
-    'tab_text' => $form_state['values']['tab_text'],
     'fieldset_wrap' => $form_state['values']['fieldset_wrap'],
     'custom_titles' => $form_state['values']['custom_titles'],
     'login_title' => $form_state['values']['login_title'],
@@ -429,14 +383,6 @@ function profile2_regpath_save_settings($form, &$form_state) {
 
   // Build array of form elements to check for new values.
   $changed_check = array(
-    array(
-      'default' => $form['regpath']['settings']['path_type']['#default_value'],
-      'new' => $form_state['values']['path_type'],
-    ),    
-    array(
-      'default' => $form['regpath']['settings']['tab_text']['#default_value'],
-      'new' => $form_state['values']['tab_text'],
-    ),
     array(
       'default' => $form['regpath']['settings']['path']['#default_value'],
       'new' => $form_state['values']['path'],
