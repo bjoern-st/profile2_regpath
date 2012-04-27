@@ -83,3 +83,4 @@ function _profile2_regpath_set_title($profiles, $key) {
   // Set title.
   drupal_set_title(check_plain($title));
 }
+
