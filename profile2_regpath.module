@@ -91,7 +91,7 @@ function profile2_regpath_menu_alter(&$items) {
   if ($user_paths = profile2_regpath_get_profiles('user')) {
     // Build form at user/register using _profile2_regpath_user_register().
     $items['user/register']['page callback'] = '_profile2_regpath_user_register';
-    $items['user/register']['page arguments'] = array($user_paths);
+    $items['user/register']['page arguments'] = array('profiles'=>$user_paths);
     $items['user/register']['file'] = 'registration_form.inc';
     $items['user/register']['file path'] = drupal_get_path('module', 'profile2_regpath');
 
