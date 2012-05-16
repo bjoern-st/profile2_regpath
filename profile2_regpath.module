@@ -445,7 +445,9 @@ function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
   }
   elseif ($form_id == 'user_register_form') {
     // Get profile2 profile types from current path.
-    $profile_types = _get_profile_types_by_path();
+    $path = end(explode('/', str_replace('/register', '', $form['#action'])));
+    $profile_types = profile2_regpath_get_profiles($path);
+    //$profile_types = _get_profile_types_by_path();
     profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
   }
 }
@@ -454,19 +456,16 @@ function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
  * Attach profile fields to form.
  */
 function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, $profile_types = NULL) {
-  // Check for $profile_types in $_SESSION in case form is being rebuilt after an AJAX request.
-  // For the record: I don't like this approach. I feel that there must be a better solution.
-  // See http://drupal.org/node/1117428.
+  
+  // Check to see if the form is being rebuilt after an AJAX request.
+  // If so, we will have lost the $profile_types parameter, and need to reacquire it.
   $menu_item = menu_get_item();
-
-  if (!$profile_types && ($menu_item['path'] == 'system/ajax' || $menu_item['path'] == 'file/ajax') && isset($_SESSION['profile2_regpath']['profile_types'])) {
-    $profile_types = $_SESSION['profile2_regpath']['profile_types'];
+  if (!$profile_types && ($menu_item['path'] == 'system/ajax' || $menu_item['path'] == 'file/ajax')) {
+    $path = end(explode('/', str_replace('/register', '', $form['#action'])));
+    $profile_types = profile2_regpath_get_profiles($path);
   }
 
   if ($profile_types != NULL) {
-    // Accomodates subsequent form rebuilds after AJAX requests,
-    // which cannot properly access arg(0) in _get_profile_types_by_path().
-    $_SESSION['profile2_regpath']['profile_types'] = $profile_types;
 
     // Prepare variables for roles.
     $user_roles = user_roles(TRUE);
@@ -539,23 +538,6 @@ function profile2_regpath_user_insert(&$edit, $account, $category) {
 function profile2_regpath_get_profile_id($profile_type) {
   $profile_id = db_query("SELECT id FROM {profile_type} WHERE type = :profile_type", array(':profile_type' => $profile_type))->fetchField();
   return $profile_id;
-}
-
-/**
- * Returns profile2 profile types from the current path.
- *
- * @return object
- *   An object containing all matching profile2 registration path enabled
- *   profile types.
- */
-function _get_profile_types_by_path() {
-  $profile_types = NULL;
-  if ($menu_item = menu_get_item()) {
-    if (isset($menu_item['page_arguments']['profiles'])) {
-      $profile_types = $menu_item['page_arguments']['profiles'];
-    }
-  }
-  return $profile_types;
 }
 
 /**
