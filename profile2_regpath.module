@@ -19,7 +19,21 @@ function profile2_regpath_menu() {
     // Set menu items for each registration path.
     foreach ($reg_paths as $key => $value) {
       $path = $value->path;
-      // We will use hook_menu_alter() to deal with the 'user' path later.
+
+      // Add profile-specific administrative 'add user' page.
+      $items['admin/people/p2rp-create/' . $path] = array(
+        'title' => 'Add user (' . $profile_types[0]->label . ' profile)',
+        'page callback' => '_profile2_regpath_user_register',
+        'page arguments' => array(
+          'profiles' => $profile_types,
+        ),
+        'access arguments' => array('administer users'),
+        'type' => MENU_LOCAL_ACTION,
+        'file' => 'registration_form.inc',
+      );
+
+      // Create registration pages for each profile type.
+      // We will use hook_menu_alter() to deal with the 'user/' path later.
       if ($path != 'user') {
         $profile_types = profile2_regpath_get_profiles($path);
         $registration_path = $path . '/register';
@@ -33,17 +47,6 @@ function profile2_regpath_menu() {
           'access callback' => 'user_is_anonymous',
           'file' => 'registration_form.inc',
           'type' => MENU_LOCAL_TASK,
-        );
-        // Add profile-specific administrative 'add user' page.
-        $items['admin/people/p2rp-create/' . $path] = array(
-          'title' => 'Add user (' . $profile_types[0]->label . ' profile)',
-          'page callback' => '_profile2_regpath_user_register',
-          'page arguments' => array(
-            'profiles' => $profile_types,
-          ),
-          'access arguments' => array('administer users'),
-          'type' => MENU_LOCAL_ACTION,
-          'file' => 'registration_form.inc',
         );
         $items[$path] = array(
           'title' => 'Log in',
