@@ -19,67 +19,67 @@ function profile2_regpath_menu() {
     // Set menu items for each registration path.
     foreach ($reg_paths as $key => $value) {
       $path = $value->path;
-
-      // Add profile-specific administrative 'add user' page.
-      $items['admin/people/p2rp-create/' . $path] = array(
-        'title' => 'Add user (' . $profile_types[0]->label . ' profile)',
-        'page callback' => '_profile2_regpath_user_register',
-        'page arguments' => array(
-          'profiles' => $profile_types,
-        ),
-        'access arguments' => array('administer users'),
-        'type' => MENU_LOCAL_ACTION,
-        'file' => 'registration_form.inc',
-      );
-
-      // Create registration pages for each profile type.
-      // We will use hook_menu_alter() to deal with the 'user/' path later.
-      if ($path != 'user') {
-        $profile_types = profile2_regpath_get_profiles($path);
-        $registration_path = $path . '/register';
-
-        $items[$registration_path] = array(
-          'title' => 'Create new account',
+      if ($profile_types = profile2_regpath_get_profiles($path)) {      
+        // Add profile-specific administrative 'add user' page.
+        $items['admin/people/p2rp-create/' . $path] = array(
+          'title' => 'Add user (' . $profile_types[0]->label . ' profile)',
           'page callback' => '_profile2_regpath_user_register',
           'page arguments' => array(
             'profiles' => $profile_types,
           ),
-          'access callback' => 'user_is_anonymous',
+          'access arguments' => array('administer users'),
+          'type' => MENU_LOCAL_ACTION,
           'file' => 'registration_form.inc',
-          'type' => MENU_LOCAL_TASK,
-        );
-        $items[$path] = array(
-          'title' => 'Log in',
-          'page callback' => '_profile2_regpath_user_login',
-          'page arguments' => array(
-            'profiles' => $profile_types,
-          ),
-          'access callback' => 'user_is_anonymous',
-          'file' => 'registration_form.inc',
-          'menu_name' => 'user-menu',
-          'type' => MENU_CALLBACK,
-        );
-        $items[$path . '/login'] = array(
-          'title' => 'Log in',
-          'page callback' => '_profile2_regpath_user_login',
-          'page arguments' => array(
-            'profiles' => $profile_types,
-          ),
-          'access callback' => 'user_is_anonymous',
-          'file' => 'registration_form.inc',
-          'type' => MENU_DEFAULT_LOCAL_TASK,
         );
 
-        $items[$path . '/password'] = array(
-          'title' => 'Request new password',
-          'type' => MENU_LOCAL_TASK,
-          'page callback' => '_profile2_regpath_user_password',
-          'page arguments' => array(
-            'profiles' => $profile_types,
-          ),
-          'access callback' => 'user_is_anonymous',
-          'file' => 'registration_form.inc',
-        );
+        // Create registration pages for each profile type.
+        // We will use hook_menu_alter() to deal with the 'user/' path later.
+        if ($path != 'user') {  
+          $registration_path = $path . '/register';
+
+          $items[$registration_path] = array(
+            'title' => 'Create new account',
+            'page callback' => '_profile2_regpath_user_register',
+            'page arguments' => array(
+              'profiles' => $profile_types,
+            ),
+            'access callback' => 'user_is_anonymous',
+            'file' => 'registration_form.inc',
+            'type' => MENU_LOCAL_TASK,
+          );
+          $items[$path] = array(
+            'title' => 'Log in',
+            'page callback' => '_profile2_regpath_user_login',
+            'page arguments' => array(
+              'profiles' => $profile_types,
+            ),
+            'access callback' => 'user_is_anonymous',
+            'file' => 'registration_form.inc',
+            'menu_name' => 'user-menu',
+            'type' => MENU_CALLBACK,
+          );
+          $items[$path . '/login'] = array(
+            'title' => 'Log in',
+            'page callback' => '_profile2_regpath_user_login',
+            'page arguments' => array(
+              'profiles' => $profile_types,
+            ),
+            'access callback' => 'user_is_anonymous',
+            'file' => 'registration_form.inc',
+            'type' => MENU_DEFAULT_LOCAL_TASK,
+          );
+
+          $items[$path . '/password'] = array(
+            'title' => 'Request new password',
+            'type' => MENU_LOCAL_TASK,
+            'page callback' => '_profile2_regpath_user_password',
+            'page arguments' => array(
+              'profiles' => $profile_types,
+            ),
+            'access callback' => 'user_is_anonymous',
+            'file' => 'registration_form.inc',
+          );
+        }
       }
     }
   }
