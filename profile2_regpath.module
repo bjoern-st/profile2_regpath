@@ -435,7 +435,7 @@ function profile2_regpath_profile2_type_delete($type) {
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
+ * Implements hook_form_alter().
  */
 function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
   // Check to see if we're building this form for a block.
@@ -477,39 +477,49 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
       $type_name = (string) $profile_types[$key]->type;
       $profile_type = profile2_get_types($type_name);
 
-      // Add profile object to $form_state.
+      // If this profile has not already been attached.
       if (empty($form_state['profiles'][$type_name])) {
-        $form_state['profiles'][$type_name] = profile_create(array('type' => $type_name));
-      }
+        $profile = profile_create(array('type' => $type_name));
 
-      // Trigger Profile2 to attach fields from profile defined in $form_state.
-      profile2_attach_form($form, $form_state);
-      $misc = unserialize($profile_types[$key]->misc);
-      if ($misc['fieldset_wrap']) {
-        // Wrap each profile form in a fieldset.
-        $form['profile_' . $type_name] += array(
-          '#type' => 'fieldset',
-          '#title' => check_plain($profile_type->label),
+        // Trigger Profile2 to attach fields from profile.
+        // We use a temporary $form_state clone to prevent re-attaching any profiles
+        // that already exist in $form_state. That seems to upset field_groups.
+        $form_state_temp = $form_state;
+        $form_state_temp['profiles'] = array(
+          $type_name => $profile,
         );
-      }
+        profile2_attach_form($form, $form_state_temp);
+        
+        // Add profile object to $form_state. This is safe to do now.
+        $form_state['profiles'][$type_name] = $profile;
 
-      // Add appropriate user roles.
-      $profile_roles = unserialize($value->roles);
-      foreach ($profile_roles as $rid => $value) {
-        // Add role to roles array if it isn't already there.
-        if ($value != 0 && !array_key_exists($rid, $form['account']['roles'])) {
-          $form['account']['roles'][$rid] = array(
-            '#type' => 'checkbox',
-            '#title' => check_plain($user_roles[$rid]),
-            '#default_value' => TRUE,
-            '#disabled' => (user_access('administer users') ? FALSE : TRUE),
+        $misc = unserialize($profile_types[$key]->misc);
+        if ($misc['fieldset_wrap']) {
+          // Wrap each profile form in a fieldset.
+          $form['profile_' . $type_name] += array(
+            '#type' => 'fieldset',
+            '#title' => check_plain($profile_type->label),
           );
         }
-      }
 
-      // Attach custom confirmation message to form for later display.
-      if (isset($misc['confirmation_display'])) {
-        $_SESSION['profile2_regpath']['confirmation_message'] = $misc['confirmation_message'];
+        // Add appropriate user roles.
+        $profile_roles = unserialize($value->roles);
+        foreach ($profile_roles as $rid => $value) {
+          // Add role to roles array if it isn't already there.
+          if ($value != 0 && !array_key_exists($rid, $form['account']['roles'])) {
+            $form['account']['roles'][$rid] = array(
+              '#type' => 'checkbox',
+              '#title' => check_plain($user_roles[$rid]),
+              '#default_value' => TRUE,
+              '#disabled' => (user_access('administer users') ? FALSE : TRUE),
+            );
+          }
+        }
+
+        // Attach custom confirmation message to form for later display.
+        if (isset($misc['confirmation_display'])) {
+          $_SESSION['profile2_regpath']['confirmation_message'] = $misc['confirmation_message'];
+        }
       }
     }
   }
