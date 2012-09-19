@@ -496,6 +496,8 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
             '#title' => check_plain($profile_type->label),
           );
         }
+        // Set Form API #weight attribute for profile.
+        $form['profile_' . $type_name]['#weight'] = $profile_type->weight;
 
         // Add appropriate user roles.
         $profile_roles = unserialize($value->roles);
