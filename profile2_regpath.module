@@ -441,8 +441,9 @@ function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'user_register_form') {
     // Get profile2 profile types from current path.
     $url = drupal_parse_url($form['#action']);
-    $path = end(explode('/', str_replace('/register', '', $url['path'])));
-    $profile_types = profile2_regpath_get_profiles($path);
+    $path = explode('/', str_replace('/register', '', $url['path']));
+    $path_key = end($path);
+    $profile_types = profile2_regpath_get_profiles($path_key);
     profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
   }
 }
@@ -451,10 +452,11 @@ function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
  * Attach profile fields to form.
  */
 function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, $profile_types = NULL) {
-  
+
   // Check to see if the form is being rebuilt after an AJAX request.
   // If so, we will have lost the $profile_types parameter, and need to reacquire it.
   $menu_item = menu_get_item();
+
   if (!$profile_types && ($menu_item['path'] == 'system/ajax' || $menu_item['path'] == 'file/ajax')) {
     $path = end(explode('/', str_replace('/register', '', $form['#action'])));
     $profile_types = profile2_regpath_get_profiles($path);
@@ -475,7 +477,9 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
       // If this profile has not already been attached.
       if (empty($form_state['profiles'][$type_name])) {
         $profile = profile_create(array('type' => $type_name));
-
+        $form_state['profiles'][$type_name] = $profile;
+        
+        /*
         // Trigger Profile2 to attach fields from profile.
         // We use a temporary $form_state clone to prevent re-attaching any profiles
         // that already exist in $form_state. That seems to upset field_groups.
@@ -484,9 +488,9 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
           $type_name => $profile,
         );
         profile2_attach_form($form, $form_state_temp);
-        
         // Add profile object to $form_state. This is safe to do now.
         $form_state['profiles'][$type_name] = $profile;
+        */
 
         $misc = unserialize($profile_types[$key]->misc);
         if ($misc['fieldset_wrap']) {
@@ -519,6 +523,8 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
         }
       }
     }
+    // Attach the profile fields via profile2.
+    profile2_attach_form($form, $form_state);
   }
 }
 
