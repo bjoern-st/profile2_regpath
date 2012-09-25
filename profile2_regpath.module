@@ -456,14 +456,13 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
   // Check to see if the form is being rebuilt after an AJAX request.
   // If so, we will have lost the $profile_types parameter, and need to reacquire it.
   $menu_item = menu_get_item();
-
   if (!$profile_types && ($menu_item['path'] == 'system/ajax' || $menu_item['path'] == 'file/ajax')) {
     $path = end(explode('/', str_replace('/register', '', $form['#action'])));
     $profile_types = profile2_regpath_get_profiles($path);
   }
 
   if ($profile_types != NULL) {
-
+    
     // Prepare variables for roles.
     $user_roles = user_roles(TRUE);
     $roles = array();
@@ -483,6 +482,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
         // Trigger Profile2 to attach fields from profile.
         // We use a temporary $form_state clone to prevent re-attaching any profiles
         // that already exist in $form_state. That seems to upset field_groups.
+        // See issue #1556520. Unfortunately, this fix breaks AJAX fields!
         $form_state_temp = $form_state;
         $form_state_temp['profiles'] = array(
           $type_name => $profile,
@@ -495,7 +495,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
         $misc = unserialize($profile_types[$key]->misc);
         if ($misc['fieldset_wrap']) {
           // Wrap each profile form in a fieldset.
-          $form['profile_' . $type_name] += array(
+          $form['profile_' . $type_name] = array(
             '#type' => 'fieldset',
             '#title' => check_plain($profile_type->label),
           );
@@ -524,6 +524,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
       }
     }
     // Attach the profile fields via profile2.
+    // @todo Add test for AJAX fields after profile2_attach_form() has been called.
     profile2_attach_form($form, $form_state);
   }
 }
