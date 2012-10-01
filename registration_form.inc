@@ -81,6 +81,6 @@ function _profile2_regpath_set_title($profiles, $key) {
     $title = 'User account';
   }
   // Set title.
-  drupal_set_title(check_plain($title));
+  drupal_set_title(t('@title', array('@title' => $title)));
 }
 
