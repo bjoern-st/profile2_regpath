@@ -19,7 +19,7 @@ function profile2_regpath_menu() {
     // Set menu items for each registration path.
     foreach ($reg_paths as $key => $value) {
       $path = $value->path;
-      if ($profile_types = profile2_regpath_get_profiles($path)) {      
+      if ($profile_types = profile2_regpath_get_profiles($path)) {
         // Add profile-specific administrative 'add user' page.
         $items['admin/people/p2rp-create/' . $path] = array(
           'title' => 'Add user (' . $profile_types[0]->label . ' profile)',
@@ -464,7 +464,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
   }
 
   if ($profile_types != NULL) {
-    
+
     // Prepare variables for roles.
     $user_roles = user_roles(TRUE);
     $roles = array();
@@ -479,7 +479,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
       if (empty($form_state['profiles'][$type_name])) {
         $profile = profile_create(array('type' => $type_name));
         $form_state['profiles'][$type_name] = $profile;
-        
+
         /*
         // Trigger Profile2 to attach fields from profile.
         // We use a temporary $form_state clone to prevent re-attaching any profiles
@@ -518,7 +518,6 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
             );
           }
         }
-
         // Attach custom confirmation message to form for later display.
         if (isset($misc['confirmation_display'])) {
           $_SESSION['profile2_regpath']['confirmation_message'] = $misc['confirmation_message'];
