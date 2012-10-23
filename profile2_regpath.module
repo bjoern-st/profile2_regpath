@@ -505,28 +505,31 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
         // Set Form API #weight attribute for profile.
         $form['profile_' . $type_name]['#weight'] = $profile_type->weight;
 
-        // Add appropriate user roles.
-        $profile_roles = unserialize($value->roles);
-        foreach ($profile_roles as $rid => $value) {
-          // Add role to roles array if it isn't already there.
-          if ($value != 0 && !array_key_exists($rid, $form['account']['roles'])) {
-            $form['account']['roles'][$rid] = array(
-              '#type' => 'checkbox',
-              '#title' => check_plain($user_roles[$rid]),
-              '#default_value' => TRUE,
-              '#disabled' => (user_access('administer users') ? FALSE : TRUE),
-            );
-          }
-        }
         // Attach custom confirmation message to form for later display.
         if (isset($misc['confirmation_display'])) {
           $_SESSION['profile2_regpath']['confirmation_message'] = $misc['confirmation_message'];
         }
       }
+
+      // Add appropriate user roles.
+      $profile_roles = unserialize($value->roles);
+      foreach ($profile_roles as $rid => $value) {
+        // Add role to roles array if it isn't already there.
+        if ($value != 0 && !array_key_exists($rid, $form['account']['roles'])) {
+          $form['account']['roles'][$rid] = array(
+            '#type' => 'checkbox',
+            '#title' => check_plain($user_roles[$rid]),
+            '#default_value' => TRUE,
+            '#disabled' => (user_access('administer users') ? FALSE : TRUE),
+          );
+        }
+      }
+
     }
     // Attach the profile fields via profile2.
     // @todo Add test for AJAX fields after profile2_attach_form() has been called.
     profile2_attach_form($form, $form_state);
+    dsm($form);
   }
 }
 
