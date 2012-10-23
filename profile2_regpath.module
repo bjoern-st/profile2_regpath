@@ -112,22 +112,6 @@ function profile2_regpath_permission() {
       'description' => t('Enable and configure unique registration paths per Profile2 profile type.'),
     ),
   );
-  /*
-  // Partially completed http://drupal.org/node/1479212#comment-5790598
-  // Create permission for each profile type's administrative add user page.
-  if ($reg_paths = profile2_regpath_get_reg_paths()) {
-    foreach ($reg_paths as $key => $value) {
-      if ($value->path != 'user' && $profile_types = profile2_regpath_get_profiles($path)) {
-        $permissions = array(
-          'add user: ' . $profile_types[0]->type . ' profile' => array(
-            'title' => t('Create users :label', array(':label', $profile_types[0]->label)),
-            'description' => t('Enable and configure unique registration paths per Profile2 profile type.'),
-          ),
-        );
-      }
-    }
-  }
-  */
 
   return $permissions;
 }
@@ -480,20 +464,6 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
         $profile = profile_create(array('type' => $type_name));
         $form_state['profiles'][$type_name] = $profile;
 
-        /*
-        // Trigger Profile2 to attach fields from profile.
-        // We use a temporary $form_state clone to prevent re-attaching any profiles
-        // that already exist in $form_state. That seems to upset field_groups.
-        // See issue #1556520. Unfortunately, this fix breaks AJAX fields!
-        $form_state_temp = $form_state;
-        $form_state_temp['profiles'] = array(
-          $type_name => $profile,
-        );
-        profile2_attach_form($form, $form_state_temp);
-        // Add profile object to $form_state. This is safe to do now.
-        $form_state['profiles'][$type_name] = $profile;
-        */
-
         $misc = unserialize($profile_types[$key]->misc);
         if ($misc['fieldset_wrap']) {
           // Wrap each profile form in a fieldset.
@@ -529,7 +499,6 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
     // Attach the profile fields via profile2.
     // @todo Add test for AJAX fields after profile2_attach_form() has been called.
     profile2_attach_form($form, $form_state);
-    dsm($form);
   }
 }
 
