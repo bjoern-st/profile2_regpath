@@ -3,10 +3,10 @@
 /**
  * @file
  * Attach profile2 form to registration form according to path.
+ *
+ * @todo Create tests
+ * @todo Make profile2_regpath settings exportable via CTools.
  */
-
-// @todo Create tests
-// @todo Make profile2_regpath settings exportable via CTools.
 
 /**
  * Implements hook_menu().
@@ -34,7 +34,7 @@ function profile2_regpath_menu() {
 
         // Create registration pages for each profile type.
         // We will use hook_menu_alter() to deal with the 'user/' path later.
-        if ($path != 'user') {  
+        if ($path != 'user') {
           $registration_path = $path . '/register';
 
           $items[$registration_path] = array(
@@ -94,7 +94,7 @@ function profile2_regpath_menu_alter(&$items) {
   if ($user_paths = profile2_regpath_get_profiles('user')) {
     // Build form at user/register using _profile2_regpath_user_register().
     $items['user/register']['page callback'] = '_profile2_regpath_user_register';
-    $items['user/register']['page arguments'] = array('profiles'=>$user_paths);
+    $items['user/register']['page arguments'] = array('profiles' => $user_paths);
     $items['user/register']['file'] = 'registration_form.inc';
     $items['user/register']['file path'] = drupal_get_path('module', 'profile2_regpath');
 
@@ -117,7 +117,7 @@ function profile2_regpath_permission() {
 }
 
 /**
- * Implements hook_form_FORM_ID_alter() for the registration form.
+ * Implements hook_form_FORM_ID_alter().
  */
 function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $form_id) {
   if (user_access('administer profile2_regpath')) {
@@ -131,7 +131,7 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
       $misc = unserialize($settings->misc);
     }
 
-    // Change description of Profile2's registration checkbox to create clear distinction.
+    // Change description of Profile2's registration checkbox.
     $form['data']['registration']['#title'] = t('Show on all user account registration forms.');
     $form['data']['registration']['#description'] = t('If selected, fields for this profile type will be added to the core user registration page and the administrative add user page.');
 
@@ -155,11 +155,12 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
         ),
       ),
     );
-    // @todo add unlimited cardinality to the path field OR change to textarea and loop through each line.
+    // @todo add unlimited cardinality to the path field OR change to textarea
+    // and loop through each line.
     $form['regpath']['settings']['path'] = array(
       '#type' => 'textfield',
       '#title' => t('URL path'),
-      '#field_prefix' => $base_url . '/',
+      '#field_prefix' => variable_get('clean_url') ? $base_url . '/' : $base_url . '?q=',
       '#field_suffix' => '/register',
       '#default_value' => is_object($settings) && $settings->path ? $settings->path : '',
       '#description' => t('Please enter the base URL for this registration path.
@@ -172,7 +173,7 @@ function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $f
       '#size' => 20,
     );
 
-    // Add textfields for custom titles on the login, register, and forgot password pages.
+    // Custom titles on the login, register, and forgot password pages.
     $form['regpath']['settings']['custom_titles'] = array(
       '#type' => 'checkbox',
       '#title' => t('Set custom page titles for the login, register, and forgot password pages.'),
@@ -293,7 +294,7 @@ function profile2_regpath_validate_settings($form, &$form_state) {
  * @param string $url
  *   A string containing a URL.
  *
- * @return
+ * @return boolean
  *   TRUE if the URL is in a valid format, and FALSE if it isn't.
  */
 function profile2_regpath_url_validator($url) {
@@ -399,12 +400,12 @@ function profile2_regpath_save_settings($form, &$form_state) {
     ),
   );
   // Rebuild the menu if any of the following values have been changed.
-  $REBUILD = FALSE;
+  $rebuild = FALSE;
   foreach ($changed_check as $field) {
-    if ($field['default'] != $field['new'] && $REBUILD == FALSE) {
+    if ($field['default'] != $field['new'] && $rebuild == FALSE) {
       if (menu_rebuild()) {
         drupal_set_message(t('The menu system has been rebuilt.'));
-        $REBUILD = TRUE;
+        $rebuild = TRUE;
       }
     }
   }
@@ -438,7 +439,7 @@ function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
 function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, $profile_types = NULL) {
 
   // Check to see if the form is being rebuilt after an AJAX request.
-  // If so, we will have lost the $profile_types parameter, and need to reacquire it.
+  // If so, we lost the $profile_types parameter, and need to reacquire it.
   $menu_item = menu_get_item();
   if (!$profile_types && ($menu_item['path'] == 'system/ajax' || $menu_item['path'] == 'file/ajax')) {
     $url = drupal_parse_url($form['#action']);
@@ -476,7 +477,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
         $form['profile_' . $type_name]['#weight'] = $profile_type->weight;
 
         // Attach custom confirmation message to form for later display.
-        if (isset($misc['confirmation_display'])) {
+        if (!empty($misc['confirmation_display'])) {
           $_SESSION['profile2_regpath']['confirmation_message'] = $misc['confirmation_message'];
         }
       }
@@ -497,7 +498,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
 
     }
     // Attach the profile fields via profile2.
-    // @todo Add test for AJAX fields after profile2_attach_form() has been called.
+    // @todo Add test for AJAX fields after profile2_attach_form() is called.
     profile2_attach_form($form, $form_state);
   }
 }
@@ -581,4 +582,3 @@ function profile2_regpath_get_reg_paths() {
 
   return $reg_paths;
 }
-
