@@ -43,7 +43,7 @@ function profile2_regpath_menu() {
             'page arguments' => array(
               'profiles' => $profile_types,
             ),
-            'access callback' => 'user_is_anonymous',
+            'access callback' => 'user_register_access',
             'file' => 'registration_form.inc',
             'type' => MENU_LOCAL_TASK,
           );
