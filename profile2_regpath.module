@@ -493,7 +493,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
       $profile_roles = unserialize($value->roles);
       foreach ($profile_roles as $rid => $value) {
         // Add role to roles array if it isn't already there.
-        if ($value != 0 && !array_key_exists($rid, $form['account']['roles'])) {
+        if ($value != 0 && !array_key_exists($rid, $form['account']['roles']) && isset($user_roles[$rid])) {
           $form['account']['roles'][$rid] = array(
             '#type' => 'checkbox',
             '#title' => check_plain($user_roles[$rid]),
