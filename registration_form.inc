@@ -16,10 +16,10 @@
  *
  * @see profile2_regpath_menu()
  */
-function _profile2_regpath_user_login($profiles) {
+function _profile2_regpath_user_login($regpath) {
   module_load_include('pages.inc', 'user', 'user');
   $output = user_page();
-  _profile2_regpath_set_title($profiles, 'login_title');
+  _profile2_regpath_set_title($regpath, 'login_title');
   return $output;
 }
 
@@ -34,10 +34,10 @@ function _profile2_regpath_user_login($profiles) {
  *
  * @see profile2_regpath_menu()
  */
-function _profile2_regpath_user_register($profiles) {
+function _profile2_regpath_user_register($regpath) {
   module_load_include('pages.inc', 'user', 'user');
   $output = drupal_get_form('user_register_form');
-  _profile2_regpath_set_title($profiles, 'register_title');
+  _profile2_regpath_set_title($regpath, 'register_title');
   return $output;
 }
 
@@ -52,10 +52,10 @@ function _profile2_regpath_user_register($profiles) {
  *
  * @see profile2_regpath_menu()
  */
-function _profile2_regpath_user_password($profiles) {
+function _profile2_regpath_user_password($regpath) {
   module_load_include('pages.inc', 'user', 'user');
   $output = drupal_get_form('user_pass');
-  _profile2_regpath_set_title($profiles, 'password_title');
+  _profile2_regpath_set_title($regpath, 'password_title');
   return $output;
 }
 
@@ -69,9 +69,9 @@ function _profile2_regpath_user_password($profiles) {
  * @param string $key
  *   Array key for 'misc' array. This will determine the title settings.
  */
-function _profile2_regpath_set_title($profiles, $key) {
+function _profile2_regpath_set_title($regpath, $key) {
   // Look for custom title in foremost profile, according to weight.
-  if (isset($profiles[0]->misc) && $misc = unserialize($profiles[0]->misc)) {
+  if (isset($regpath->misc) && $misc = unserialize($regpath->misc)) {
     if (array_key_exists($key, $misc)) {
       $title = $misc[$key];
     }
