@@ -137,7 +137,7 @@ function profile2_regpath_profile2_type_delete($type) {
  */
 function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'user_register_form') {
-    module_load_include('ind', 'profile2_regpath');
+    module_load_include('inc', 'profile2_regpath');
 
     // Logintoboggan might display user_register_form on 403 pages.
     if (module_exists('logintoboggan') && variable_get('site_403') == 'toboggan/denied' && strpos(drupal_get_http_header('Status'), '403') === 0) {
@@ -158,9 +158,8 @@ function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
       $path_key = reset($path_parts);
 
       // Load profiles for this path key and attach associated fields.
-      $profile_types = profile2_regpath_regpath_load_multiple(array('path' => $path_key));
+      $profile_types = profile2_regpath_regpath_load_multiple(array('path' => $path_key, 'status' => 1));
     }
-
     profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
   }
 }

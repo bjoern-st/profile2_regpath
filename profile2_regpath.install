@@ -15,7 +15,7 @@ function profile2_regpath_schema() {
       'key' => 'profile_type',
       'key name' => 'Profile Type',
       'primary key' => 'profile_type',
-      'identifier' => 'regpath', // Exports will be defined as $regpath
+      'identifier' => 'regpath',
       'api' => array(
         'owner' => 'profile2_regpath',
         'api' => 'profile2_regpath',
@@ -35,7 +35,7 @@ function profile2_regpath_schema() {
         'description' => 'Profile2 profile ID',
         'type' => 'int',
         'not null' => TRUE,
-        'no export' => TRUE, // Do not export database-only keys.
+        'no export' => TRUE,
       ),
       'path' => array(
         'description' => 'Profile-specific registration form path',
@@ -81,7 +81,7 @@ function profile2_regpath_schema() {
  * Implements hook_enable().
  */
 function profile2_regpath_enable() {
-  drupal_set_message(st('Profile2 Registration Path has been enabled. To configure profile registration paths, edit a profile type on the ' . l('Profile Types administration page', 'admin/structure/profiles')), 'status');
+  drupal_set_message(st('Profile2 Registration Path has been enabled. To configure profile registration paths, edit a profile type on the ' . l(t('Profile Types administration page'), 'admin/structure/profiles')), 'status');
 }
 
 /**
@@ -161,9 +161,7 @@ function profile2_regpath_update_7130() {
 }
 
 /**
- * Implements hook_update_n().
- *
- * Add fields
+ * Add fields.
  */
 function profile2_regpath_update_7131() {
   $spec = array(
@@ -179,9 +177,7 @@ function profile2_regpath_update_7131() {
 }
 
 /**
- * Implements hook_update_n().
- *
- * Update roles
+ * Update roles.
  */
 function profile2_regpath_update_7132() {
   $query = db_select('profile2_regpath', 'pr');
@@ -190,7 +186,6 @@ function profile2_regpath_update_7132() {
   $regpaths = $result->fetchAll();
 
   // Only store role that is enabled.
-  // Use role name instead of role id
   foreach ($regpaths as $regpath) {
     $roles = unserialize($regpath->roles);
     $updated_roles = array();
@@ -200,7 +195,7 @@ function profile2_regpath_update_7132() {
       }
     }
 
-    // Update roles
+    // Update roles.
     db_update('profile2_regpath')
             ->fields(array('roles' => serialize($updated_roles)))
             ->condition('profile_id', $regpath->profile_id)
@@ -209,9 +204,7 @@ function profile2_regpath_update_7132() {
 }
 
 /**
- * Implements hook_update_n().
- *
- * Update profile name
+ * Update profile name.
  */
 function profile2_regpath_update_7133() {
   db_query(
@@ -223,8 +216,6 @@ function profile2_regpath_update_7133() {
 }
 
 /**
- * Implements hook_update_n().
- *
  * Enable dependencies
  */
 function profile2_regpath_update_7134() {

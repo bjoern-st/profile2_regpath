@@ -126,12 +126,11 @@ function _profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $
     $roles = user_roles(TRUE);
     unset($roles[DRUPAL_AUTHENTICATED_RID]);
 
-    // Prepare default value for roles checkbox
+    // Prepare default value for roles checkbox.
     $default_roles = array();
     $roles_settings = is_object($settings) && $settings->roles ? unserialize($settings->roles) : array();
     $enabled_rids = array_keys($roles_settings);
     foreach ($roles as $rid => $role_name) {
-      // Check by rid, not role name
       if (in_array($rid, $enabled_rids)) {
         $default_roles[$rid] = $rid;
       }
@@ -267,7 +266,6 @@ function profile2_regpath_save_settings($form, &$form_state) {
   );
 
   // Add roles if enabled.
-  // Use role name instead of role id
   $roles = array();
   foreach ($form_state['values']['roles'] as $role_id => $enable) {
     if ($enable) {
@@ -292,33 +290,8 @@ function profile2_regpath_save_settings($form, &$form_state) {
   $fields['profile_id'] = $profile_id;
   profile2_regpath_regpath_save($fields);
 
-  // Build array of form elements to check for new values.
-  $changed_check = array(
-    array(
-      'default' => $form['regpath']['settings']['path']['#default_value'],
-      'new' => $form_state['values']['path'],
-    ),
-    array(
-      'default' => $form['regpath']['settings']['custom_titles_settings']['login_title']['#default_value'],
-      'new' => $form_state['values']['login_title'],
-    ),
-    array(
-      'default' => $form['regpath']['settings']['custom_titles_settings']['register_title']['#default_value'],
-      'new' => $form_state['values']['register_title'],
-    ),
-    array(
-      'default' => $form['regpath']['settings']['custom_titles_settings']['password_title']['#default_value'],
-      'new' => $form_state['values']['password_title'],
-    ),
-  );
-  // Rebuild the menu if any of the following values have been changed.
-  $rebuild = FALSE;
-  foreach ($changed_check as $field) {
-    if ($field['default'] != $field['new'] && $rebuild == FALSE) {
-      if (menu_rebuild()) {
-        drupal_set_message(t('The menu system has been rebuilt.'));
-        $rebuild = TRUE;
-      }
-    }
+  // Rebuild menu.
+  if (menu_rebuild()) {
+    drupal_set_message(t('The menu system has been rebuilt.'));
   }
 }
