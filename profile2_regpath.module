@@ -15,6 +15,7 @@ function profile2_regpath_menu() {
   $items = array();
 
   $reg_paths = profile2_regpath_get_reg_paths();
+
   if ($reg_paths) {
     // Set menu items for each registration path.
     foreach ($reg_paths as $key => $value) {
@@ -508,7 +509,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
             '#type' => 'checkbox',
             '#title' => check_plain($user_roles[$rid]),
             '#default_value' => TRUE,
-            '#disabled' => (user_access('administer users') ? FALSE : TRUE),
+            '#disabled' => user_access('administer users'),
           );
         }
       }
@@ -591,11 +592,11 @@ function profile2_regpath_get_reg_paths() {
   $reg_paths = NULL;
   // Get data object of all registration paths.
   $query = db_select('profile2_regpath', 'pr');
-  $query->fields('pr', array('path', 'misc'));
+  $query->fields('pr', array('profile_type', 'path', 'misc'));
   $query->groupBy('path');
   $query->condition('pr.status', 1);
   $result = $query->execute();
-  $reg_paths = $result->fetchAll();
+  $reg_paths = $result->fetchAllAssoc('profile_type');
 
   return $reg_paths;
 }
