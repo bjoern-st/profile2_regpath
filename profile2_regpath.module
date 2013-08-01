@@ -432,8 +432,18 @@ function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
     else {
       // Get profile2 profile types from current path.
       $url = drupal_parse_url($form['#action']);
-      $path = explode('/', str_replace('/register', '', $url['path']));
-      $path_key = end($path);
+      $path = ltrim($url['path'], '/');
+
+      // Check to see if this is an alias. If so, use source path.
+      if ($source = drupal_lookup_path('source', $path)) {
+        $path = $source;
+      }
+
+      // Grab first part of URL.
+      $path_parts = explode('/', $path);
+      $path_key = reset($path_parts);
+
+      // Load profiles for this path key and attach associated fields.
       $profile_types = profile2_regpath_get_profiles($path_key);
       profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
     }
