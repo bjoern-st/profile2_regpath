@@ -22,7 +22,6 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
 
   if ($profile_types != NULL) {
 
-    dpm($profile_types);
     // Prepare variables for roles.
     $user_roles = user_roles(TRUE);
 
