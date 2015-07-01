@@ -327,13 +327,7 @@ function profile2_regpath_regpath_delete($regpath) {
  *   The name of the feature module whose components should be reverted.
  */
 function profile2_regpath_features_revert($module_name) {
-  $regpaths = module_invoke($module_name, 'default_profile2_regpath');
-  if (!empty($regpaths)) {
-    foreach ($regpaths as $regpath) {
-      profile2_regpath_regpath_delete($regpath);
-    }
-  }
-  menu_rebuild();
+  return profile2_regpath_features_rebuild($module_name);
 }
 
 /**
@@ -351,6 +345,8 @@ function profile2_regpath_features_rebuild($module_name) {
       unset($regpath->disabled);
       unset($regpath->api_version);
       $regpath = get_object_vars($regpath);
+      $profile = profile2_type_load($regpath['profile_type']);
+      $regpath['profile_id'] = $profile->id;
       profile2_regpath_regpath_save($regpath);
     }
   }
