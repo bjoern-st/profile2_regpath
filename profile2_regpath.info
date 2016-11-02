@@ -3,3 +3,4 @@ description = Attach profile2 profile forms to profile-specific registration url
 core = 7.x
 dependencies[] = ctools
 dependencies[] = profile2
+files[] = tests/Profile2RegpathAccessTest.test
