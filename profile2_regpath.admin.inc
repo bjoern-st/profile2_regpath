@@ -80,19 +80,19 @@ function _profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $
     $form['regpath']['settings']['custom_titles_settings']['login_title'] = array(
       '#type' => 'textfield',
       '#title' => t('Login page title'),
-      '#default_value' => is_object($settings) && isset($misc['login_title']) ? filter_xss($misc['login_title']) : 'User Account',
+      '#default_value' => is_object($settings) && isset($misc['login_title']) ? $misc['login_title'] : 'User Account',
       '#description' => t('Enter the title you want to display in the login page. The default title is <i>User Account</i>.'),
     );
     $form['regpath']['settings']['custom_titles_settings']['register_title'] = array(
       '#type' => 'textfield',
       '#title' => t('Register page title'),
-      '#default_value' => is_object($settings) && isset($misc['register_title']) ? filter_xss($misc['register_title']) : 'User Account',
+      '#default_value' => is_object($settings) && isset($misc['register_title']) ? $misc['register_title'] : 'User Account',
       '#description' => t('Enter the title you want to display in the registration page. The default title is <i>User Account</i>.'),
     );
     $form['regpath']['settings']['custom_titles_settings']['password_title'] = array(
       '#type' => 'textfield',
       '#title' => t('Password page title'),
-      '#default_value' => is_object($settings) && isset($misc['password_title']) ? filter_xss($misc['password_title']) : 'User Account',
+      '#default_value' => is_object($settings) && isset($misc['password_title']) ? $misc['password_title'] : 'User Account',
       '#description' => t('Enter the title you want to display in the request new password page. The default title is <i>User Account</i>.'),
     );
 
@@ -106,7 +106,7 @@ function _profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $
     $form['regpath']['settings']['confirmation_message'] = array(
       '#type' => 'textarea',
       '#title' => t('Confirmation Message'),
-      '#default_value' => is_object($settings) && isset($misc['confirmation_message']) ? filter_xss($misc['confirmation_message']) : '',
+      '#default_value' => is_object($settings) && isset($misc['confirmation_message']) ? $misc['confirmation_message'] : '',
       '#description' => t('Enter the confirmation message that you would like to display.'),
       '#states' => array(
         'invisible' => array(

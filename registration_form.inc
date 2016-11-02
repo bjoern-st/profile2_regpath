@@ -81,5 +81,5 @@ function _profile2_regpath_set_title($regpath, $key) {
     $title = 'User account';
   }
   // Set title. See http://drupal.org/node/1800116 for use of t().
-  drupal_set_title(t(filter_xss($title)));
+  drupal_set_title(t($title));
 }
