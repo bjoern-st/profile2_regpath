@@ -170,7 +170,7 @@ function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
 function profile2_regpath_user_insert(&$edit, $account, $category) {
   // Show custom confirmation message.
   if (isset($_SESSION['profile2_regpath']['confirmation_message'])) {
-    drupal_set_message($_SESSION['profile2_regpath']['confirmation_message']);
+    drupal_set_message(filter_xss($_SESSION['profile2_regpath']['confirmation_message']));
     unset($_SESSION['profile2_regpath']['confirmation_message']);
   }
 }

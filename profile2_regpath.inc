@@ -49,7 +49,7 @@ function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, 
 
         // Attach custom confirmation message to form for later display.
         if (!empty($misc['confirmation_display'])) {
-          $_SESSION['profile2_regpath']['confirmation_message'] = $misc['confirmation_message'];
+          $_SESSION['profile2_regpath']['confirmation_message'] = filter_xss($misc['confirmation_message']);
         }
       }
 

@@ -65,7 +65,7 @@ function _profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $
     $form['regpath']['settings']['custom_titles'] = array(
       '#type' => 'checkbox',
       '#title' => t('Set custom page titles for the login, register, and forgot password pages.'),
-      '#default_value' => is_object($settings) && isset($misc['custom_titles']) ? $misc['custom_titles'] : 0,
+      '#default_value' => is_object($settings) && isset($misc['custom_titles']) ? (int) $misc['custom_titles'] : 0,
       '#description' => t('Enabling this option will permit you to override the default title of "User Account" on the login, register, and forgot password pages.'),
     );
     $form['regpath']['settings']['custom_titles_settings'] = array(
@@ -80,19 +80,19 @@ function _profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $
     $form['regpath']['settings']['custom_titles_settings']['login_title'] = array(
       '#type' => 'textfield',
       '#title' => t('Login page title'),
-      '#default_value' => is_object($settings) && isset($misc['login_title']) ? $misc['login_title'] : 'User Account',
+      '#default_value' => is_object($settings) && isset($misc['login_title']) ? filter_xss($misc['login_title']) : 'User Account',
       '#description' => t('Enter the title you want to display in the login page. The default title is <i>User Account</i>.'),
     );
     $form['regpath']['settings']['custom_titles_settings']['register_title'] = array(
       '#type' => 'textfield',
       '#title' => t('Register page title'),
-      '#default_value' => is_object($settings) && isset($misc['register_title']) ? $misc['register_title'] : 'User Account',
+      '#default_value' => is_object($settings) && isset($misc['register_title']) ? filter_xss($misc['register_title']) : 'User Account',
       '#description' => t('Enter the title you want to display in the registration page. The default title is <i>User Account</i>.'),
     );
     $form['regpath']['settings']['custom_titles_settings']['password_title'] = array(
       '#type' => 'textfield',
       '#title' => t('Password page title'),
-      '#default_value' => is_object($settings) && isset($misc['password_title']) ? $misc['password_title'] : 'User Account',
+      '#default_value' => is_object($settings) && isset($misc['password_title']) ? filter_xss($misc['password_title']) : 'User Account',
       '#description' => t('Enter the title you want to display in the request new password page. The default title is <i>User Account</i>.'),
     );
 
@@ -100,13 +100,13 @@ function _profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $
     $form['regpath']['settings']['confirmation_display'] = array(
       '#type' => 'checkbox',
       '#title' => t('Display a confirmation message after registration.'),
-      '#default_value' => is_object($settings) && isset($misc['confirmation_display']) ? $misc['confirmation_display'] : 0,
+      '#default_value' => is_object($settings) && isset($misc['confirmation_display']) ? (int) $misc['confirmation_display'] : 0,
       '#description' => t('Enabling this option display a custom confirmation message to the user after a successful registration.'),
     );
     $form['regpath']['settings']['confirmation_message'] = array(
       '#type' => 'textarea',
       '#title' => t('Confirmation Message'),
-      '#default_value' => is_object($settings) && isset($misc['confirmation_message']) ? $misc['confirmation_message'] : '',
+      '#default_value' => is_object($settings) && isset($misc['confirmation_message']) ? filter_xss($misc['confirmation_message']) : '',
       '#description' => t('Enter the confirmation message that you would like to display.'),
       '#states' => array(
         'invisible' => array(
@@ -119,7 +119,7 @@ function _profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $
       '#type' => 'checkbox',
       '#title' => 'Wrap profile fields in a fieldset',
       '#description' => t('If checked, all profile fields for this profile type will be wrapped in a fieldset titled @label on the user registration form.', array('@label' => '')),
-      '#default_value' => is_object($settings) && isset($misc['fieldset_wrap']) ? $misc['fieldset_wrap'] : 0,
+      '#default_value' => is_object($settings) && isset($misc['fieldset_wrap']) ? (int) $misc['fieldset_wrap'] : 0,
     );
 
     // Add form fields for assigning roles during registration.
@@ -152,7 +152,7 @@ function _profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $
       '#title' => t('Weight'),
       '#description' => t("If multiple sets of profile fields are attached to a single registration path, they will be sorted in ascending order by weight. This will affect both the order of profile fields and the title settings."),
       '#options' => drupal_map_assoc(range(-10, 10, 1)),
-      '#default_value' => is_object($settings) && $settings->weight ? $settings->weight : 0,
+      '#default_value' => is_object($settings) && $settings->weight ? (int) $settings->weight : 0,
     );
 
     // Add new validate and submit handlers.
