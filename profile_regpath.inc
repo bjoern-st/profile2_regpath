@@ -8,7 +8,7 @@
 /*
  * Attach profile fields to form.
  */
-function profile2_regpath_attach_profile_fields(&$form, &$form_state, $form_id, $profile_types = NULL) {
+function profile_regpath_attach_profile_fields(&$form, &$form_state, $form_id, $profile_types = NULL) {
 
   // Check to see if the form is being rebuilt after an AJAX request.
   // If so, we lost the $profile_types parameter, and need to reacquire it.
