@@ -128,8 +128,9 @@ function profile_regpath_form_profile_type_form_alter(&$form, &$form_state, $for
  * Implements hook_profile_type_delete().
  */
 function profile_regpath_profile_type_delete($type) {
-  // Delete table entries for deleted profile profile type.
-  db_delete('profile_regpath')->condition('profile_id', $type->id)->execute();
+  // Delete config entries for deleted profile profile type.
+  // db_delete('profile_regpath')->condition('profile_id', $type->id)->execute();
+  config('profile.regpath.' . $type)->delete();
 }
 
 /**
