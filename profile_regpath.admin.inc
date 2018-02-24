@@ -8,7 +8,7 @@
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function _profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $form_id) {
+function _profile2_regpath_form_profile_type_form_alter(&$form, &$form_state, $form_id) {
   if (user_access('administer profile2_regpath')) {
     // Grab existing values.
     global $base_url;
@@ -124,7 +124,7 @@ function _profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $
 
     // Add form fields for assigning roles during registration.
     $roles = user_roles(TRUE);
-    unset($roles[DRUPAL_AUTHENTICATED_RID]);
+    unset($roles[BACKDROP_AUTHENTICATED_RID]);
 
     // Prepare default value for roles checkbox.
     $default_roles = array();
@@ -151,7 +151,7 @@ function _profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $
       '#type' => 'select',
       '#title' => t('Weight'),
       '#description' => t("If multiple sets of profile fields are attached to a single registration path, they will be sorted in ascending order by weight. This will affect both the order of profile fields and the title settings."),
-      '#options' => drupal_map_assoc(range(-10, 10, 1)),
+      '#options' => backdrop_map_assoc(range(-10, 10, 1)),
       '#default_value' => is_object($settings) && $settings->weight ? (int) $settings->weight : 0,
     );
 
@@ -183,7 +183,7 @@ function profile2_regpath_validate_settings($form, &$form_state) {
       }
     }
     // Check to see if selected path is being used by an alias.
-    if ($existing_alias = drupal_lookup_path('source', $form_state['values']['path'])) {
+    if ($existing_alias = backdrop_lookup_path('source', $form_state['values']['path'])) {
       form_set_error('path', t('Error, that base path is already being used as an alias. Please select a different base path or remove the alias.'));
     }
   }
@@ -292,6 +292,6 @@ function profile2_regpath_save_settings($form, &$form_state) {
 
   // Rebuild menu.
   if (menu_rebuild()) {
-    drupal_set_message(t('The menu system has been rebuilt.'));
+    backdrop_set_message(t('The menu system has been rebuilt.'));
   }
 }
