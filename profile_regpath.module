@@ -236,7 +236,8 @@ function profile_regpath_get_profiles($path = NULL, $groupby = NULL, $pid = NULL
  *   The label for indicated profile type.
  */
 function profile_regpath_get_profile_label($profile_type) {
-  $profile_label = db_query("SELECT label FROM {profile_type} WHERE type = :profile_type", array(':profile_type' => $profile_type))->fetchField();
+  $profile = config_get('profile.type.' . $profile_type);
+  $profile_label = $profile->label;
   return $profile_label;
 }
 
@@ -244,11 +245,7 @@ function profile_regpath_get_profile_label($profile_type) {
  * Implements 'load' callback for regpath exportables.
  */
 function profile_regpath_regpath_load($profile_type) {
-  // Prevent "Call to undefined function ctools_include()" error while going to profile manage page
-  module_load_include('module', 'ctools', 'ctools');
-
-  ctools_include('export');
-  $result = ctools_export_load_object('profile_regpath', 'names', array($profile_type));
+  $results = profile_regpath_load_all_config_items();
   if (isset($result[$profile_type])) {
     return $result[$profile_type];
   }
@@ -259,7 +256,6 @@ function profile_regpath_regpath_load($profile_type) {
  */
 function profile_regpath_regpath_load_multiple($conditions) {
   $results = profile_regpath_load_all_config_items();
-  $results = ctools_export_load_object('profile_regpath', 'conditions', $conditions);
   foreach ($results as $index => $config) {
     foreach ($conditions as $key => $value) {
       if (!isset($config[$ey]) || ($config[$key] != $value)) {
@@ -368,7 +364,8 @@ function profile_regpath_load_all_config_items() {
   $items = array();
   $config_names = config_get_names_with_prefix('profile.regpath.');
   foreach ($config_names as $config_name) {
-    $items[] = config_get($config_name);
+    $item = config_get($config_name);
+    $items[$item['profile_type']] = $item;
   }
   return $items;
 }
