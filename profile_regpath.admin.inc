@@ -256,7 +256,7 @@ function profile_regpath_url_validator($url) {
  */
 function profile_regpath_save_settings($form, &$form_state) {
   $profile_type = $form_state['values']['type'];
-  $profile_id = profile_regpath_get_profile_id($profile_type);
+  // $profile_id = profile_regpath_get_profile_id($profile_type);
 
   // Define fields for db_merge.
   $fields = array(
