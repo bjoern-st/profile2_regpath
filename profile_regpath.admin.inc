@@ -8,18 +8,18 @@
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function _profile2_regpath_form_profile_type_form_alter(&$form, &$form_state, $form_id) {
-  if (user_access('administer profile2_regpath')) {
+function _profile_regpath_form_profile_type_form_alter(&$form, &$form_state, $form_id) {
+  if (user_access('administer profile_regpath')) {
     // Grab existing values.
     global $base_url;
     $profile_type = $form['type']['#default_value'];
-    $settings     = profile2_regpath_regpath_load($profile_type);
+    $settings     = profile_regpath_regpath_load($profile_type);
     // Unserialize array of miscellaneous display options.
     if (is_object($settings)) {
       $misc = unserialize($settings->misc);
     }
 
-    // Change description of Profile2's registration checkbox.
+    // Change description of profile's registration checkbox.
     $form['data']['registration']['#title'] = t('Show on all user account registration forms.');
     $form['data']['registration']['#description'] = t('If selected, fields for this profile type will be added to the core user registration page and the administrative add user page.');
 
@@ -156,29 +156,29 @@ function _profile2_regpath_form_profile_type_form_alter(&$form, &$form_state, $f
     );
 
     // Add new validate and submit handlers.
-    $form['#validate'][] = 'profile2_regpath_validate_settings';
-    $form['#submit'][] = 'profile2_regpath_save_settings';
+    $form['#validate'][] = 'profile_regpath_validate_settings';
+    $form['#submit'][] = 'profile_regpath_save_settings';
   }
 }
 
 /**
  * Validate profile settings form values.
  */
-function profile2_regpath_validate_settings($form, &$form_state) {
+function profile_regpath_validate_settings($form, &$form_state) {
   if ($form_state['values']['status'] == 1) {
     // Validate URL tail via regex. This also tests that path is not null.
-    if (profile2_regpath_url_validator(trim($form_state['values']['path'])) == FALSE) {
+    if (profile_regpath_url_validator(trim($form_state['values']['path'])) == FALSE) {
       form_set_error('path', 'Error, you did not enter a valid URL.');
     }
     // Ensure that URL does not contain a '/'.
-    // @todo move this to profile2_regpath_url_validator.
+    // @todo move this to profile_regpath_url_validator.
     if (strpos($form_state['values']['path'], '/')) {
       form_set_error('path', 'Error, you cannot use a "/" in your unique path. You may specify only a single segment of the URL.');
     }
     // Check to see if another module is using the selected path.
     // We must make exceptions for '/user' and other p2rp registered paths.
     if ($form_state['values']['path'] != 'user' && $existing_item = menu_get_item($form_state['values']['path'])) {
-      if ($existing_item['page_callback'] != '_profile2_regpath_user_login') {
+      if ($existing_item['page_callback'] != '_profile_regpath_user_login') {
         form_set_error('path', 'Error, that base path is already being used by another module.');
       }
     }
@@ -198,7 +198,7 @@ function profile2_regpath_validate_settings($form, &$form_state) {
  * @return boolean
  *   TRUE if the URL is in a valid format, and FALSE if it isn't.
  */
-function profile2_regpath_url_validator($url) {
+function profile_regpath_url_validator($url) {
   $LINK_ICHARS_DOMAIN = (string) html_entity_decode(implode("", array(
         // æ
         "&#x00E6;",
@@ -254,9 +254,9 @@ function profile2_regpath_url_validator($url) {
 /**
  * Helper function to save profile settings.
  */
-function profile2_regpath_save_settings($form, &$form_state) {
+function profile_regpath_save_settings($form, &$form_state) {
   $profile_type = $form_state['values']['type'];
-  $profile_id = profile2_regpath_get_profile_id($profile_type);
+  $profile_id = profile_regpath_get_profile_id($profile_type);
 
   // Define fields for db_merge.
   $fields = array(
@@ -288,7 +288,7 @@ function profile2_regpath_save_settings($form, &$form_state) {
   // Add settings to database.
   $fields['profile_type'] = $profile_type;
   $fields['profile_id'] = $profile_id;
-  profile2_regpath_regpath_save($fields);
+  profile_regpath_regpath_save($fields);
 
   // Rebuild menu.
   if (menu_rebuild()) {
