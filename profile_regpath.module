@@ -2,19 +2,19 @@
 
 /**
  * @file
- * Attach profile2 form to registration form according to path.
+ * Attach profile form to registration form according to path.
  *
  * @todo Create tests
- * @todo Make profile2_regpath settings exportable via CTools.
+ * @todo Make profile_regpath settings exportable via CTools.
  */
 
 /**
  * Implements hook_menu().
  */
-function profile2_regpath_menu() {
+function profile_regpath_menu() {
   $items = array();
 
-  $reg_paths = profile2_regpath_regpath_load_all();
+  $reg_paths = profile_regpath_regpath_load_all();
 
   if ($reg_paths) {
     // Set menu items for each registration path.
@@ -23,8 +23,8 @@ function profile2_regpath_menu() {
 
       // Add profile-specific administrative 'add user' page.
       $items['admin/people/p2rp-create/' . $path] = array(
-        'title' => 'Add user (' . profile2_regpath_get_profile_label($reg_path->profile_type) . ' profile)',
-        'page callback' => '_profile2_regpath_user_register',
+        'title' => 'Add user (' . profile_regpath_get_profile_label($reg_path->profile_type) . ' profile)',
+        'page callback' => '_profile_regpath_user_register',
         'page arguments' => array(
           'regpath' => $reg_path,
         ),
@@ -40,7 +40,7 @@ function profile2_regpath_menu() {
 
         $items[$registration_path] = array(
           'title' => 'Create new account',
-          'page callback' => '_profile2_regpath_user_register',
+          'page callback' => '_profile_regpath_user_register',
           'page arguments' => array(
             'regpath' => $reg_path
           ),
@@ -50,7 +50,7 @@ function profile2_regpath_menu() {
         );
         $items[$path] = array(
           'title' => 'Log in',
-          'page callback' => '_profile2_regpath_user_login',
+          'page callback' => '_profile_regpath_user_login',
           'page arguments' => array(
             'regpath' => $reg_path,
           ),
@@ -61,7 +61,7 @@ function profile2_regpath_menu() {
         );
         $items[$path . '/login'] = array(
           'title' => 'Log in',
-          'page callback' => '_profile2_regpath_user_login',
+          'page callback' => '_profile_regpath_user_login',
           'page arguments' => array(
             'regpath' => $reg_path,
           ),
@@ -72,7 +72,7 @@ function profile2_regpath_menu() {
         $items[$path . '/password'] = array(
           'title' => 'Request new password',
           'type' => MENU_LOCAL_TASK,
-          'page callback' => '_profile2_regpath_user_password',
+          'page callback' => '_profile_regpath_user_password',
           'page arguments' => array(
             'regpath' => $reg_path,
           ),
@@ -88,15 +88,15 @@ function profile2_regpath_menu() {
 /**
  * Implements hook_menu_alter().
  */
-function profile2_regpath_menu_alter(&$items) {
-  // Check to see if the default 'user' path is being used with Profile2.
-  if ($user_paths = profile2_regpath_regpath_load_multiple(array('path' => 'user'))) {
+function profile_regpath_menu_alter(&$items) {
+  // Check to see if the default 'user' path is being used with profile.
+  if ($user_paths = profile_regpath_regpath_load_multiple(array('path' => 'user'))) {
     $regpath = array_shift($user_paths);
-    // Build form at user/register using _profile2_regpath_user_register().
-    $items['user/register']['page callback'] = '_profile2_regpath_user_register';
+    // Build form at user/register using _profile_regpath_user_register().
+    $items['user/register']['page callback'] = '_profile_regpath_user_register';
     $items['user/register']['page arguments'] = array('regpath' => $regpath);
     $items['user/register']['file'] = 'registration_form.inc';
-    $items['user/register']['file path'] = drupal_get_path('module', 'profile2_regpath');
+    $items['user/register']['file path'] = drupal_get_path('module', 'profile_regpath');
 
     return $items;
   }
@@ -105,11 +105,11 @@ function profile2_regpath_menu_alter(&$items) {
 /**
  * Implements hook_permission().
  */
-function profile2_regpath_permission() {
+function profile_regpath_permission() {
   $permissions = array(
-    'administer profile2_regpath' => array(
-      'title' => t('Administer Profile2 registration paths'),
-      'description' => t('Enable and configure unique registration paths per Profile2 profile type.'),
+    'administer profile_regpath' => array(
+      'title' => t('Administer profile registration paths'),
+      'description' => t('Enable and configure unique registration paths per profile profile type.'),
     ),
   );
 
@@ -119,32 +119,32 @@ function profile2_regpath_permission() {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function profile2_regpath_form_profile2_type_form_alter(&$form, &$form_state, $form_id) {
-  module_load_include('inc', 'profile2_regpath', 'profile2_regpath.admin');
-  _profile2_regpath_form_profile2_type_form_alter($form, $form_state, $form_id);
+function profile_regpath_form_profile_type_form_alter(&$form, &$form_state, $form_id) {
+  module_load_include('inc', 'profile_regpath', 'profile_regpath.admin');
+  _profile_regpath_form_profile_type_form_alter($form, $form_state, $form_id);
 }
 
 /**
- * Implements hook_profile2_type_delete().
+ * Implements hook_profile_type_delete().
  */
-function profile2_regpath_profile2_type_delete($type) {
-  // Delete table entries for deleted profile2 profile type.
-  db_delete('profile2_regpath')->condition('profile_id', $type->id)->execute();
+function profile_regpath_profile_type_delete($type) {
+  // Delete table entries for deleted profile profile type.
+  db_delete('profile_regpath')->condition('profile_id', $type->id)->execute();
 }
 
 /**
  * Implements hook_form_alter().
  */
-function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
+function profile_regpath_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'user_register_form') {
-    module_load_include('inc', 'profile2_regpath');
+    module_load_include('inc', 'profile_regpath');
 
     // Logintoboggan might display user_register_form on 403 pages.
     if (module_exists('logintoboggan') && variable_get('site_403') == 'toboggan/denied' && strpos(drupal_get_http_header('Status'), '403') === 0) {
-      $profile_types = profile2_regpath_get_profiles('user');
+      $profile_types = profile_regpath_get_profiles('user');
     }
     else {
-      // Get profile2 profile types from current path.
+      // Get profile profile types from current path.
       $url = drupal_parse_url($form['#action']);
       $path = ltrim($url['path'], '/');
 
@@ -158,20 +158,20 @@ function profile2_regpath_form_alter(&$form, &$form_state, $form_id) {
       $path_key = reset($path_parts);
 
       // Load profiles for this path key and attach associated fields.
-      $profile_types = profile2_regpath_regpath_load_multiple(array('path' => $path_key, 'status' => 1));
+      $profile_types = profile_regpath_regpath_load_multiple(array('path' => $path_key, 'status' => 1));
     }
-    profile2_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
+    profile_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
   }
 }
 
 /**
  * Implements hook_user_insert().
  */
-function profile2_regpath_user_insert(&$edit, $account, $category) {
+function profile_regpath_user_insert(&$edit, $account, $category) {
   // Show custom confirmation message.
-  if (isset($_SESSION['profile2_regpath']['confirmation_message'])) {
-    drupal_set_message(filter_xss($_SESSION['profile2_regpath']['confirmation_message']));
-    unset($_SESSION['profile2_regpath']['confirmation_message']);
+  if (isset($_SESSION['profile_regpath']['confirmation_message'])) {
+    drupal_set_message(filter_xss($_SESSION['profile_regpath']['confirmation_message']));
+    unset($_SESSION['profile_regpath']['confirmation_message']);
   }
 }
 
@@ -179,12 +179,12 @@ function profile2_regpath_user_insert(&$edit, $account, $category) {
  * Provides profile_id by profile machine_name.
  *
  * @param string $profile_type
- *   Machine-name of profile2 profile type.
+ *   Machine-name of profile profile type.
  *
  * @return string
  *   The profile id for indicated profile type.
  */
-function profile2_regpath_get_profile_id($profile_type) {
+function profile_regpath_get_profile_id($profile_type) {
   $profile_id = db_query("SELECT id FROM {profile_type} WHERE type = :profile_type", array(':profile_type' => $profile_type))->fetchField();
   return $profile_id;
 }
@@ -199,12 +199,12 @@ function profile2_regpath_get_profile_id($profile_type) {
  *   (optional) field to groupby. Defaults to NULL.
  *
  * @return object
- *   An object containing all matching profile2 registration path enabled
+ *   An object containing all matching profile registration path enabled
  *   profile types.
  */
-function profile2_regpath_get_profiles($path = NULL, $groupby = NULL, $pid = NULL) {
+function profile_regpath_get_profiles($path = NULL, $groupby = NULL, $pid = NULL) {
   // Get data object of all registration paths.
-  $query = db_select('profile2_regpath', 'pr');
+  $query = db_select('profile_regpath', 'pr');
   $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
   $query->fields('pr', array('path', 'roles', 'misc', 'status'));
   $query->fields('pt', array('id', 'label', 'type'));
@@ -229,12 +229,12 @@ function profile2_regpath_get_profiles($path = NULL, $groupby = NULL, $pid = NUL
  * Provides label by profile machine_name.
  *
  * @param string $profile_type
- *   Machine-name of profile2 profile type.
+ *   Machine-name of profile profile type.
  *
  * @return string
  *   The label for indicated profile type.
  */
-function profile2_regpath_get_profile_label($profile_type) {
+function profile_regpath_get_profile_label($profile_type) {
   $profile_label = db_query("SELECT label FROM {profile_type} WHERE type = :profile_type", array(':profile_type' => $profile_type))->fetchField();
   return $profile_label;
 }
@@ -242,12 +242,12 @@ function profile2_regpath_get_profile_label($profile_type) {
 /**
  * Implements 'load' callback for regpath exportables.
  */
-function profile2_regpath_regpath_load($profile_type) {
+function profile_regpath_regpath_load($profile_type) {
   // Prevent "Call to undefined function ctools_include()" error while going to profile manage page
   module_load_include('module', 'ctools', 'ctools');
 
   ctools_include('export');
-  $result = ctools_export_load_object('profile2_regpath', 'names', array($profile_type));
+  $result = ctools_export_load_object('profile_regpath', 'names', array($profile_type));
   if (isset($result[$profile_type])) {
     return $result[$profile_type];
   }
@@ -256,32 +256,32 @@ function profile2_regpath_regpath_load($profile_type) {
 /**
  * Implements 'load multiple' callback for regpath exportables.
  */
-function profile2_regpath_regpath_load_multiple($conditions) {
+function profile_regpath_regpath_load_multiple($conditions) {
   // Prevent "Call to undefined function ctools_include()" error
   module_load_include('module', 'ctools', 'ctools');
 
   ctools_include('export');
-  $results = ctools_export_load_object('profile2_regpath', 'conditions', $conditions);
+  $results = ctools_export_load_object('profile_regpath', 'conditions', $conditions);
   return array_filter($results);
 }
 
 /**
  * Implements 'load all' callback for regpath exportables.
  */
-function profile2_regpath_regpath_load_all() {
+function profile_regpath_regpath_load_all() {
   // Prevent "Call to undefined function ctools_include()" error while updating database
   module_load_include('module', 'ctools', 'ctools');
 
   ctools_include('export');
-  $results = ctools_export_load_object('profile2_regpath');
+  $results = ctools_export_load_object('profile_regpath');
   return array_filter($results);
 }
 
 /**
  * Save a single regpath.
  */
-function profile2_regpath_regpath_save(&$regpath) {
-  $exist = profile2_regpath_regpath_load($regpath['profile_type']);
+function profile_regpath_regpath_save(&$regpath) {
+  $exist = profile_regpath_regpath_load($regpath['profile_type']);
   $update = $exist ? 'profile_type' : array();
 
   // Check if we have profile id when creating new regpath
@@ -290,7 +290,7 @@ function profile2_regpath_regpath_save(&$regpath) {
     if (!isset($regpath['profile_id']) || !is_numeric($regpath['profile_id']) || $regpath['profile_id'] <= 0) {
       // Unvalid profile id
       // New profile type need profile id, we load it from database
-      $profile_type = profile2_type_load($regpath['profile_type']);
+      $profile_type = profile_type_load($regpath['profile_type']);
 
       if (empty($profile_type)) {
         // No profile types was found
@@ -301,53 +301,53 @@ function profile2_regpath_regpath_save(&$regpath) {
     }
   }
 
-  return db_merge('profile2_regpath')->key(array('profile_type' => $regpath['profile_type']))->fields($regpath)->execute();
+  return db_merge('profile_regpath')->key(array('profile_type' => $regpath['profile_type']))->fields($regpath)->execute();
 }
 
 /**
  * Delete a regpath.
  */
-function profile2_regpath_regpath_delete($regpath) {
+function profile_regpath_regpath_delete($regpath) {
   // Prevent "Call to undefined function ctools_include()" error
   module_load_include('module', 'ctools', 'ctools');
 
   $profile_type = is_object($regpath) ? $regpath->profile_type : $regpath;
-  db_query('DELETE FROM {profile2_regpath} WHERE profile_type=:profile_type', array(':profile_type' => $profile_type));
+  db_query('DELETE FROM {profile_regpath} WHERE profile_type=:profile_type', array(':profile_type' => $profile_type));
 
   // Clear the Ctools export API cache.
   ctools_include('export');
-  ctools_export_load_object_reset('profile2_regpath');
+  ctools_export_load_object_reset('profile_regpath');
 }
 
 /**
  * Implements hook_features_revert().
- * Rebuild menu after all profile2_regpath components is reverted.
+ * Rebuild menu after all profile_regpath components is reverted.
  *
  * @param type $module_namestring $module_name
  *   The name of the feature module whose components should be reverted.
  */
-function profile2_regpath_features_revert($module_name) {
-  return profile2_regpath_features_rebuild($module_name);
+function profile_regpath_features_revert($module_name) {
+  return profile_regpath_features_rebuild($module_name);
 }
 
 /**
  * Implements hook_features_rebuild().
- * Rebuild menu after all profile2_regpath components is re-built.
+ * Rebuild menu after all profile_regpath components is re-built.
  *
  * @param string $module_name
  *   The name of the feature module whose components should be rebuilt.
  */
-function profile2_regpath_features_rebuild($module_name) {
-  $regpaths = module_invoke($module_name, 'default_profile2_regpath');
+function profile_regpath_features_rebuild($module_name) {
+  $regpaths = module_invoke($module_name, 'default_profile_regpath');
   if (!empty($regpaths)) {
     foreach ($regpaths as $regpath) {
       // Disable non-schema properties
       unset($regpath->disabled);
       unset($regpath->api_version);
       $regpath = get_object_vars($regpath);
-      $profile = profile2_type_load($regpath['profile_type']);
+      $profile = profile_type_load($regpath['profile_type']);
       $regpath['profile_id'] = $profile->id;
-      profile2_regpath_regpath_save($regpath);
+      profile_regpath_regpath_save($regpath);
     }
   }
   menu_rebuild();
