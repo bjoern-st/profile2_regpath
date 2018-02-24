@@ -11,15 +11,15 @@
  * Path: [path-setting]/login
  *
  * @param object $profiles
- *   Object containing single row from profile2_regpath_get_profiles() database
+ *   Object containing single row from profile_regpath_get_profiles() database
  *   result.
  *
  * @see profile2_regpath_menu()
  */
-function _profile2_regpath_user_login($regpath) {
+function _profile_regpath_user_login($regpath) {
   module_load_include('pages.inc', 'user', 'user');
   $output = user_page();
-  _profile2_regpath_set_title($regpath, 'login_title');
+  _profile_regpath_set_title($regpath, 'login_title');
   return $output;
 }
 
@@ -32,12 +32,12 @@ function _profile2_regpath_user_login($regpath) {
  *   Object containing single row from profile2_regpath_get_profiles() database
  *   result.
  *
- * @see profile2_regpath_menu()
+ * @see profile_regpath_menu()
  */
-function _profile2_regpath_user_register($regpath) {
+function _profile_regpath_user_register($regpath) {
   module_load_include('pages.inc', 'user', 'user');
-  $output = drupal_get_form('user_register_form');
-  _profile2_regpath_set_title($regpath, 'register_title');
+  $output = backdrop_get_form('user_register_form');
+  _profile_regpath_set_title($regpath, 'register_title');
   return $output;
 }
 
@@ -50,12 +50,12 @@ function _profile2_regpath_user_register($regpath) {
  *   Object containing single row from profile2_regpath_get_profiles() database
  *   result.
  *
- * @see profile2_regpath_menu()
+ * @see profile_regpath_menu()
  */
-function _profile2_regpath_user_password($regpath) {
+function _profile_regpath_user_password($regpath) {
   module_load_include('pages.inc', 'user', 'user');
-  $output = drupal_get_form('user_pass');
-  _profile2_regpath_set_title($regpath, 'password_title');
+  $output = backdrop_get_form('user_pass');
+  _profile_regpath_set_title($regpath, 'password_title');
   return $output;
 }
 
@@ -69,7 +69,7 @@ function _profile2_regpath_user_password($regpath) {
  * @param string $key
  *   Array key for 'misc' array. This will determine the title settings.
  */
-function _profile2_regpath_set_title($regpath, $key) {
+function _profile_regpath_set_title($regpath, $key) {
   // Look for custom title in foremost profile, according to weight.
   if (isset($regpath->misc) && $misc = unserialize($regpath->misc)) {
     if (array_key_exists($key, $misc)) {
@@ -81,5 +81,5 @@ function _profile2_regpath_set_title($regpath, $key) {
     $title = 'User account';
   }
   // Set title. See http://drupal.org/node/1800116 for use of t().
-  drupal_set_title(t($title));
+  backdrop_set_title(t($title));
 }
