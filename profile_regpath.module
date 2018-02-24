@@ -258,11 +258,15 @@ function profile_regpath_regpath_load($profile_type) {
  * Implements 'load multiple' callback for regpath exportables.
  */
 function profile_regpath_regpath_load_multiple($conditions) {
-  // Prevent "Call to undefined function ctools_include()" error
-  module_load_include('module', 'ctools', 'ctools');
-
-  ctools_include('export');
+  $results = profile_regpath_load_all_config_items();
   $results = ctools_export_load_object('profile_regpath', 'conditions', $conditions);
+  foreach ($results as $index => $config) {
+    foreach ($conditions as $key => $value) {
+      if (!isset($config[$ey]) || ($config[$key] != $value)) {
+        unset($results[$index]);
+      }
+    }
+  }
   return array_filter($results);
 }
 
@@ -270,11 +274,7 @@ function profile_regpath_regpath_load_multiple($conditions) {
  * Implements 'load all' callback for regpath exportables.
  */
 function profile_regpath_regpath_load_all() {
-  // Prevent "Call to undefined function ctools_include()" error while updating database
-  module_load_include('module', 'ctools', 'ctools');
-
-  ctools_include('export');
-  $results = ctools_export_load_object('profile_regpath');
+  $results = profile_regpath_load_all_config_items();
   return array_filter($results);
 }
 
@@ -354,3 +354,21 @@ function profile_regpath_features_rebuild($module_name) {
   menu_rebuild();
 }
 
+
+/**
+ * Load all configuration files with registration ppaths.
+ * @return array Array with loaded configs.
+ */
+function profile_regpath_load_all_config_items() {
+  $items = &backdrop_static(__FUNCTION__);
+  if (isset($items)) {
+    return $items;
+  }
+
+  $items = array();
+  $config_names = config_get_names_with_prefix('profile.regpath.');
+  foreach ($config_names as $config_name) {
+    $items[] = config_get($config_name);
+  }
+  return $items;
+}
