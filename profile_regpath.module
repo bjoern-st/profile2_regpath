@@ -205,25 +205,29 @@ function profile_regpath_get_profile_id($profile_type) {
  */
 function profile_regpath_get_profiles($path = NULL, $groupby = NULL, $pid = NULL) {
   // Get data object of all registration paths.
-  $query = db_select('profile_regpath', 'pr');
-  $query->join('profile_type', 'pt', 'pr.profile_id = pt.id');
-  $query->fields('pr', array('path', 'roles', 'misc', 'status'));
-  $query->fields('pt', array('id', 'label', 'type'));
-  if ($path) {
-    $query->condition('path', $path);
-  }
-  if ($groupby) {
-    $query->groupBy($groupby);
-  }
-  if ($pid) {
-    $query->condition('profile_id', $pid);
-  }
-  $query->condition('pr.status', 1);
-  $query->orderBy('pr.weight', 'ASC');
-  $result = $query->execute();
-  $profile_types = $result->fetchAll();
+  // Find regpaths with conditions first.
+  $regpaths = profile_regpath_regpath_load_multiple($path);
 
+  $profile_types = array();
 
+  foreach ($regpaths as $key => $regpath) {
+    // Load the corresponding profile type.
+    $profile = config_get('profile.type.' . $regpath['profile_type']);
+    if ($profile) {
+      $item = new stdClass();
+      foreach ($regpath_fields as $value) {
+        if (isset($regpath[$value])) {
+          $item->{$value} = $regpath[$value];
+        }
+      }
+      foreach ($profile as $value) {
+        if (isset($profile[$value])) {
+          $item->{$value} = $profile[$value];
+        }
+      } 
+      $profile_types[] = $item;  
+    }
+  }  
 
   return $profile_types;
 }
@@ -356,7 +360,8 @@ function profile_regpath_features_rebuild($module_name) {
 
 
 /**
- * Load all configuration files with registration ppaths.
+ * Load all configuration files with registration paths.
+ * 
  * @return array Array with loaded configs.
  */
 function profile_regpath_load_all_config_items() {
