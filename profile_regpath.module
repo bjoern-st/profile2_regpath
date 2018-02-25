@@ -286,27 +286,9 @@ function profile_regpath_regpath_load_all() {
  * Save a single regpath.
  */
 function profile_regpath_regpath_save(&$regpath) {
-  $exist = profile_regpath_regpath_load($regpath['profile_type']);
-  $update = $exist ? 'profile_type' : array();
-
-  // Check if we have profile id when creating new regpath
-  if (!$update) {
-    // We are creating new profile type
-    if (!isset($regpath['profile_id']) || !is_numeric($regpath['profile_id']) || $regpath['profile_id'] <= 0) {
-      // Unvalid profile id
-      // New profile type need profile id, we load it from database
-      $profile_type = profile_type_load($regpath['profile_type']);
-
-      if (empty($profile_type)) {
-        // No profile types was found
-        return FALSE;
-      } else {
-        $regpath['profile_id'] = $profile_type->id;
-      }
-    }
-  }
-
-  return db_merge('profile_regpath')->key(array('profile_type' => $regpath['profile_type']))->fields($regpath)->execute();
+  $config = config('profile.regpath.' . $regpath['profile_type']);
+  $config->setData($regpath);
+  $config->save();
 }
 
 /**
