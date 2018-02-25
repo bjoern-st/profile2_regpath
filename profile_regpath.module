@@ -223,6 +223,8 @@ function profile_regpath_get_profiles($path = NULL, $groupby = NULL, $pid = NULL
   $result = $query->execute();
   $profile_types = $result->fetchAll();
 
+
+
   return $profile_types;
 }
 
@@ -254,14 +256,16 @@ function profile_regpath_regpath_load($profile_type) {
 /**
  * Implements 'load multiple' callback for regpath exportables.
  */
-function profile_regpath_regpath_load_multiple($conditions) {
+function profile_regpath_regpath_load_multiple($conditions = NULL) {
   $results = profile_regpath_load_all_config_items();
-  foreach ($results as $index => $config) {
-    foreach ($conditions as $key => $value) {
-      if (!isset($config[$ey]) || ($config[$key] != $value)) {
-        unset($results[$index]);
+  if ($conditions) {
+    foreach ($results as $index => $config) {
+      foreach ($conditions as $key => $value) {
+        if (!isset($config[$ey]) || ($config[$key] != $value)) {
+          unset($results[$index]);
+        }
       }
-    }
+    }    
   }
   return array_filter($results);
 }
