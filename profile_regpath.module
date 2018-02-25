@@ -292,56 +292,6 @@ function profile_regpath_regpath_save(&$regpath) {
 }
 
 /**
- * Delete a regpath.
- */
-function profile_regpath_regpath_delete($regpath) {
-  // Prevent "Call to undefined function ctools_include()" error
-  module_load_include('module', 'ctools', 'ctools');
-
-  $profile_type = is_object($regpath) ? $regpath->profile_type : $regpath;
-  db_query('DELETE FROM {profile_regpath} WHERE profile_type=:profile_type', array(':profile_type' => $profile_type));
-
-  // Clear the Ctools export API cache.
-  ctools_include('export');
-  ctools_export_load_object_reset('profile_regpath');
-}
-
-/**
- * Implements hook_features_revert().
- * Rebuild menu after all profile_regpath components is reverted.
- *
- * @param type $module_namestring $module_name
- *   The name of the feature module whose components should be reverted.
- */
-function profile_regpath_features_revert($module_name) {
-  return profile_regpath_features_rebuild($module_name);
-}
-
-/**
- * Implements hook_features_rebuild().
- * Rebuild menu after all profile_regpath components is re-built.
- *
- * @param string $module_name
- *   The name of the feature module whose components should be rebuilt.
- */
-function profile_regpath_features_rebuild($module_name) {
-  $regpaths = module_invoke($module_name, 'default_profile_regpath');
-  if (!empty($regpaths)) {
-    foreach ($regpaths as $regpath) {
-      // Disable non-schema properties
-      unset($regpath->disabled);
-      unset($regpath->api_version);
-      $regpath = get_object_vars($regpath);
-      $profile = profile_type_load($regpath['profile_type']);
-      $regpath['profile_id'] = $profile->id;
-      profile_regpath_regpath_save($regpath);
-    }
-  }
-  menu_rebuild();
-}
-
-
-/**
  * Load all configuration files with registration paths.
  * 
  * @return array Array with loaded configs.
