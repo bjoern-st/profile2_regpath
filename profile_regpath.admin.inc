@@ -269,13 +269,13 @@ function profile_regpath_save_settings($form, &$form_state) {
   $roles = array();
   foreach ($form_state['values']['roles'] as $role_id => $enable) {
     if ($enable) {
-      $roles[$role_id] = db_query("SELECT r.name FROM {role} AS r WHERE r.rid = :rid", array(':rid' => $role_id))->fetchField();
+      $roles[$role_id] = $role_id;
     }
   }
-  $fields['roles'] = serialize($roles);
+  $fields['roles'] = $roles;
 
   // Create array of miscellaneous display options.
-  $fields['misc'] = serialize(array(
+  $fields['misc'] = array(
       'fieldset_wrap' => $form_state['values']['fieldset_wrap'],
       'custom_titles' => $form_state['values']['custom_titles'],
       'login_title' => $form_state['values']['login_title'],
@@ -283,7 +283,7 @@ function profile_regpath_save_settings($form, &$form_state) {
       'password_title' => $form_state['values']['password_title'],
       'confirmation_display' => $form_state['values']['confirmation_display'],
       'confirmation_message' => $form_state['values']['confirmation_message'],
-    ));
+    );
 
   // Add settings to database.
   $fields['profile_type'] = $profile_type;
