@@ -128,7 +128,7 @@ function _profile_regpath_form_profile_type_form_alter(&$form, &$form_state, $fo
 
     // Prepare default value for roles checkbox.
     $default_roles = array();
-    $roles_settings = is_object($settings) && $settings->roles ? unserialize($settings->roles) : array();
+    $roles_settings = is_object($settings) && $settings->roles ? $settings->roles : array();
     $enabled_rids = array_keys($roles_settings);
     foreach ($roles as $rid => $role_name) {
       if (in_array($rid, $enabled_rids)) {

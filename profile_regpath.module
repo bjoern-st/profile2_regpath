@@ -129,7 +129,6 @@ function profile_regpath_form_profile_type_form_alter(&$form, &$form_state, $for
  */
 function profile_regpath_profile_type_delete($type) {
   // Delete config entries for deleted profile profile type.
-  // db_delete('profile_regpath')->condition('profile_id', $type->id)->execute();
   config('profile.regpath.' . $type)->delete();
 }
 
@@ -251,7 +250,7 @@ function profile_regpath_get_profile_label($profile_type) {
  * Implements 'load' callback for regpath exportables.
  */
 function profile_regpath_regpath_load($profile_type) {
-  $results = profile_regpath_load_all_config_items();
+  $result = profile_regpath_load_all_config_items();
   if (isset($result[$profile_type])) {
     return $result[$profile_type];
   }
@@ -265,7 +264,7 @@ function profile_regpath_regpath_load_multiple($conditions = NULL) {
   if ($conditions) {
     foreach ($results as $index => $config) {
       foreach ($conditions as $key => $value) {
-        if (!isset($config[$ey]) || ($config[$key] != $value)) {
+        if (!isset($config->{$key}) || ($config->{$key} != $value)) {
           unset($results[$index]);
         }
       }
@@ -297,16 +296,11 @@ function profile_regpath_regpath_save(&$regpath) {
  * @return array Array with loaded configs.
  */
 function profile_regpath_load_all_config_items() {
-  $items = &backdrop_static(__FUNCTION__);
-  if (isset($items)) {
-    return $items;
-  }
-
   $items = array();
   $config_names = config_get_names_with_prefix('profile.regpath.');
   foreach ($config_names as $config_name) {
     $item = config_get($config_name);
-    $items[$item['profile_type']] = $item;
+    $items[$item['profile_type']] = (object)$item;
   }
   return $items;
 }
