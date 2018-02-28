@@ -194,7 +194,7 @@ function profile_regpath_get_profiles($path = NULL, $groupby = NULL, $pid = NULL
   $regpaths = profile_regpath_regpath_load_multiple($path);
 
   $regpath_fields = array('path', 'roles', 'misc', 'status');
-  $profile_fields = array('id', 'label', 'type')
+  $profile_fields = array('id', 'label', 'type');
 
   $profile_types = array();
 
