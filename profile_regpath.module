@@ -193,6 +193,9 @@ function profile_regpath_get_profiles($path = NULL, $groupby = NULL, $pid = NULL
   // Find regpaths with conditions first.
   $regpaths = profile_regpath_regpath_load_multiple($path);
 
+  $regpath_fields = array('path', 'roles', 'misc', 'status');
+  $profile_fields = array('id', 'label', 'type')
+
   $profile_types = array();
 
   foreach ($regpaths as $key => $regpath) {
@@ -205,7 +208,7 @@ function profile_regpath_get_profiles($path = NULL, $groupby = NULL, $pid = NULL
           $item->{$value} = $regpath[$value];
         }
       }
-      foreach ($profile as $value) {
+      foreach ($profile_fields as $value) {
         if (isset($profile[$value])) {
           $item->{$value} = $profile[$value];
         }
