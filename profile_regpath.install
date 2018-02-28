@@ -8,14 +8,14 @@
 /**
  * Implements hook_enable().
  */
-function profile2_regpath_enable() {
+function profile_regpath_enable() {
   drupal_set_message(st('Profile Registration Path has been enabled. To configure profile registration paths, edit a profile type on the ' . l(t('Profile Types administration page'), 'admin/structure/profiles')), 'status');
 }
 
 /**
  * Implements hook_uninstall()
  */
-function profile_uninstall() {
+function profile_regpath_uninstall() {
   $config_names = config_get_names_with_prefix('regpath.profile');
   foreach ($config_names as $config_file) {
     config($config_file)->delete();
