@@ -176,20 +176,6 @@ function profile_regpath_user_insert(&$edit, $account, $category) {
 }
 
 /**
- * Provides profile_id by profile machine_name.
- *
- * @param string $profile_type
- *   Machine-name of profile profile type.
- *
- * @return string
- *   The profile id for indicated profile type.
- */
-function profile_regpath_get_profile_id($profile_type) {
-  $profile_id = db_query("SELECT id FROM {profile_type} WHERE type = :profile_type", array(':profile_type' => $profile_type))->fetchField();
-  return $profile_id;
-}
-
-/**
  * Returns object containing all p2rp data.
  *
  * @param string $path
