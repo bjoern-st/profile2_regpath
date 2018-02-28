@@ -129,7 +129,7 @@ function profile_regpath_form_profile_type_form_alter(&$form, &$form_state, $for
  */
 function profile_regpath_profile_type_delete($type) {
   // Delete config entries for deleted profile profile type.
-  config('profile.regpath.' . $type)->delete();
+  config('regpath.profile.' . $type)->delete();
 }
 
 /**
@@ -223,10 +223,10 @@ function profile_regpath_get_profiles($path = NULL, $groupby = NULL, $pid = NULL
         if (isset($profile[$value])) {
           $item->{$value} = $profile[$value];
         }
-      } 
-      $profile_types[] = $item;  
+      }
+      $profile_types[] = $item;
     }
-  }  
+  }
 
   return $profile_types;
 }
@@ -268,7 +268,7 @@ function profile_regpath_regpath_load_multiple($conditions = NULL) {
           unset($results[$index]);
         }
       }
-    }    
+    }
   }
   return array_filter($results);
 }
@@ -285,19 +285,19 @@ function profile_regpath_regpath_load_all() {
  * Save a single regpath.
  */
 function profile_regpath_regpath_save(&$regpath) {
-  $config = config('profile.regpath.' . $regpath['profile_type']);
+  $config = config('regpath.profile.' . $regpath['profile_type']);
   $config->setData($regpath);
   $config->save();
 }
 
 /**
  * Load all configuration files with registration paths.
- * 
+ *
  * @return array Array with loaded configs.
  */
 function profile_regpath_load_all_config_items() {
   $items = array();
-  $config_names = config_get_names_with_prefix('profile.regpath.');
+  $config_names = config_get_names_with_prefix('regpath.profile');
   foreach ($config_names as $config_name) {
     $item = config_get($config_name);
     $items[$item['profile_type']] = (object)$item;

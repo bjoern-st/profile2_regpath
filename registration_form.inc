@@ -14,7 +14,7 @@
  *   Object containing single row from profile_regpath_get_profiles() database
  *   result.
  *
- * @see profile2_regpath_menu()
+ * @see profile_regpath_menu()
  */
 function _profile_regpath_user_login($regpath) {
   module_load_include('pages.inc', 'user', 'user');
