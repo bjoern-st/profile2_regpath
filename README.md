@@ -7,6 +7,11 @@ DESCRIPTION
 --------------------------------
 This module enables administrators to set unique registration paths per Profile2 profile type.
 
+INSTALLATION
+------------
+
+ * Install this module using the official Backdrop CMS instructions at
+   https://backdropcms.org/guide/modules
 
 INSTRUCTIONS
 --------------------------------
@@ -17,6 +22,14 @@ INSTRUCTIONS
 * Save
 * Logout and visit: [your-site-url]/[your-url]/register
 
+MAINTAINERS
+-----------
+
+Current maintainer:
+ * Bjoern - https://github.com/bjoern-st
+
+Current drupal maintainers:
+  * Matthew Grasmick (madmatter23 on drupal.org)
 
 CREDITS
 --------------------------------
