@@ -22,6 +22,14 @@ INSTRUCTIONS
 * Save
 * Logout and visit: [your-site-url]/[your-url]/register
 
+KNOWN ISSUES
+------------
+When using this module the profile setting "Show during user account registration." combined 
+with "Check user roles that should have this profile." doesnt work right now, but only 
+the fields for that profile with this registration path are used.
+So no combination of several profiles during registration is supported.
+
+
 MAINTAINERS
 -----------
 
