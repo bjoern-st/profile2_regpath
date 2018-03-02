@@ -159,6 +159,28 @@ function profile_regpath_form_alter(&$form, &$form_state, $form_id) {
 
       // Load profiles for this path key and attach associated fields.
       $profile_types = profile_regpath_regpath_load_multiple(array('path' => $path_key, 'status' => 1));
+
+      // Load all other profiles declared for registration depending on the assigned roles.
+      $registration_profiles = profile_get_types();
+
+      // Check if roles appear in profiles. 
+      foreach ($profile_types as $key => $value) {
+        $profile_type_roles = $value->roles;
+        foreach ($registration_profiles as $key2 => $value2) {
+          $registration_roles = $value2->roles;
+          if (!empty(array_intersect($profile_type_roles, $registration_roles))) {
+            if (!isset($profile_types[$key2])) {
+              $value2->profile_type = $key2;
+              $profile_types[$key2] = $value2;
+            }
+          }
+        }
+      }
+
+      // Sort items by weight.
+      backdrop_sort($profile_types, array(
+        'weight' => SORT_NUMERIC,
+      ));  
     }
     profile_regpath_attach_profile_fields($form, $form_state, $form_id, $profile_types);
   }
