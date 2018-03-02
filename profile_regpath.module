@@ -167,12 +167,14 @@ function profile_regpath_form_alter(&$form, &$form_state, $form_id) {
       foreach ($profile_types as $key => $value) {
         $profile_type_roles = $value->roles;
         foreach ($registration_profiles as $key2 => $value2) {
-          $registration_roles = $value2->roles;
-          if (!empty(array_intersect($profile_type_roles, $registration_roles))) {
-            if (!isset($profile_types[$key2])) {
-              $value2->profile_type = $key2;
-              $profile_types[$key2] = $value2;
-            }
+          if (!empty($value2->registration)) {
+            $registration_roles = $value2->roles;
+            if (!empty(array_intersect($profile_type_roles, $registration_roles))) {
+              if (!isset($profile_types[$key2])) {
+                $value2->profile_type = $key2;
+                $profile_types[$key2] = $value2;
+              }
+            }            
           }
         }
       }
