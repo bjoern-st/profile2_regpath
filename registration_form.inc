@@ -71,7 +71,7 @@ function _profile_regpath_user_password($regpath) {
  */
 function _profile_regpath_set_title($regpath, $key) {
   // Look for custom title in foremost profile, according to weight.
-  if (isset($regpath->misc) && $misc = unserialize($regpath->misc)) {
+  if (isset($regpath->misc) && $misc = $regpath->misc) {
     if (array_key_exists($key, $misc)) {
       $title = $misc[$key];
     }
