@@ -16,7 +16,7 @@ function _profile_regpath_form_profile_type_form_alter(&$form, &$form_state, $fo
     $settings     = profile_regpath_regpath_load($profile_type);
     // Unserialize array of miscellaneous display options.
     if (is_object($settings)) {
-      $misc = unserialize($settings->misc);
+      $misc = $settings->misc;
     }
 
     // Change description of profile's registration checkbox.
@@ -155,6 +155,13 @@ function _profile_regpath_form_profile_type_form_alter(&$form, &$form_state, $fo
       '#default_value' => is_object($settings) && $settings->weight ? (int) $settings->weight : 0,
     );
 
+    $form['regpath']['settings']['redirect'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Redirect path'),
+      '#description' => t('Here you can set the redirect after submitting the form. Use a path like node/%nid'),
+      '#default_value' => is_object($settings) && $settings->redirect ? $settings->redirect : '',
+    );
+
     // Add new validate and submit handlers.
     $form['#validate'][] = 'profile_regpath_validate_settings';
     $form['#submit'][] = 'profile_regpath_save_settings';
@@ -263,6 +270,7 @@ function profile_regpath_save_settings($form, &$form_state) {
     'path' => $form_state['values']['path'],
     'status' => $form_state['values']['status'],
     'weight' => $form_state['values']['weight'],
+    'redirect' => $form_state['values']['redirect'],
   );
 
   // Add roles if enabled.
