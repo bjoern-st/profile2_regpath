@@ -129,7 +129,11 @@ function profile_regpath_form_profile_type_form_alter(&$form, &$form_state, $for
  */
 function profile_regpath_profile_type_delete($type) {
   // Delete config entries for deleted profile profile type.
-  config('regpath.profile.' . $type)->delete();
+  config('regpath.profile.' . $type->type)->delete();
+
+  // Clear the static cache from profile_regpath_load_all_config_items().
+  $cache = &backdrop_static('profile_regpath_load_all_config_items', array());
+  unset($cache[$type->type]);  
 }
 
 /**
@@ -309,12 +313,15 @@ function profile_regpath_regpath_save(&$regpath) {
  * @return array Array with loaded configs.
  */
 function profile_regpath_load_all_config_items() {
-  $items = array();
-  $config_names = config_get_names_with_prefix('regpath.profile');
-  foreach ($config_names as $config_name) {
-    $item = config_get($config_name);
-    $items[$item['profile_type']] = (object)$item;
+  $items = &backdrop_static(__FUNCTION__, array());
+  if (empty($items)) {
+    $config_names = config_get_names_with_prefix('regpath.profile');
+    foreach ($config_names as $config_name) {
+      $item = config_get($config_name);
+      $items[$item['profile_type']] = (object)$item;
+    }    
   }
+
   // Sort items by weight.
   backdrop_sort($items, array(
     'weight' => SORT_NUMERIC,
