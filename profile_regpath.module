@@ -292,13 +292,8 @@ function profile_regpath_load_all_config_items() {
     $items[$item['profile_type']] = (object)$item;
   }
   // Sort items by weight.
-  uasort($items, '_compare');
+  backdrop_sort($items, array(
+    'weight' => SORT_NUMERIC,
+  ));  
   return $items;
-}
-
-/**
- * Helper function to sort config items with uasort.
- */
-function _compare($x, $y) {
-  return ($x->weight > $y->weight);
 }
